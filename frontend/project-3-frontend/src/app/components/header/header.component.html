@@ -1,0 +1,12 @@
+<mat-toolbar>
+    <span>StockTracker</span>
+    <span class="spacer"></span>
+    <mat-tab-group [(selectedIndex)]="selectedIndex" (selectedIndexChange)="onTabChange($event)">
+        <mat-tab label="Dashboard" routerLink="/dashboard"></mat-tab>
+        <mat-tab label="Portfolio"></mat-tab>
+        <mat-tab label="Market"></mat-tab>
+    </mat-tab-group>
+    <div class="login-btn">
+        <button mat-raised-button routerLink='/profile'>login</button>
+    </div>
+</mat-toolbar>
