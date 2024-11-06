@@ -9,15 +9,30 @@ import { MatTabsModule } from '@angular/material/tabs';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatTabsModule, FormsModule],
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTabsModule,
+    FormsModule,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.scss'
+  styleUrl: './profile.component.scss',
 })
 export class ProfileComponent {
-  hide = signal(true);
-  clickEvent(event: MouseEvent) {
-    this.hide.set(!this.hide());
+  hideLogin = signal(true);
+  hideSignup = signal(true);
+  hideConfirm = signal(true);
+  clickEvent(event: MouseEvent, type: 'login' | 'signup' | 'confirm') {
+    if (type === 'login') {
+      this.hideLogin.set(!this.hideLogin());
+    } else if (type === 'signup') {
+      this.hideSignup.set(!this.hideSignup());
+    } else if (type === 'confirm') {
+      this.hideConfirm.set(!this.hideConfirm());
+    }
     event.stopPropagation();
   }
 
