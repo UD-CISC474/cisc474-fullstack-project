@@ -1,26 +1,32 @@
 <div class="container">
   <div class="login-container">
-    <mat-tab-group dynamicHeight>
+    <mat-tab-group dynamicHeight (selectedTabChange)="onTabChange($event)">
       <mat-tab label="Login">
         <form class="form-container">
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="outline">
             <mat-label>Username</mat-label>
             <input
               matInput
-              [(ngModel)]="loginUsername"
+              [formControl]="loginUsername"
               name="username"
               required
             />
+            <mat-error *ngIf="submitted() && loginUsername.invalid">
+              Username is required
+            </mat-error>
           </mat-form-field>
-          <mat-form-field>
-            <mat-label appearance="fill">Password</mat-label>
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
             <input
               matInput
-              [(ngModel)]="loginPassword"
+              [formControl]="loginPassword"
               name="password"
               [type]="hideLogin() ? 'password' : 'text'"
               required
             />
+            <mat-error *ngIf="submitted() && signupPassword.invalid">
+              Password is required
+            </mat-error>
             <button
               class="hide-btn"
               mat-icon-button
@@ -51,24 +57,30 @@
       <mat-tab label="Sign-Up">
         <div class="signup-container">
           <form class="form-container">
-            <mat-form-field appearance="fill">
+            <mat-form-field appearance="outline">
               <mat-label>Username</mat-label>
               <input
                 matInput
-                [(ngModel)]="signupUsername"
+                [formControl]="signupUsername"
                 name="username"
                 required
               />
+              <mat-error *ngIf="submitted() && signupUsername.invalid">
+                Username is required
+              </mat-error>
             </mat-form-field>
-            <mat-form-field appearance="fill">
+            <mat-form-field appearance="outline">
               <mat-label>Password</mat-label>
               <input
                 matInput
-                [(ngModel)]="signupPassword"
+                [formControl]="signupPassword"
                 name="password"
                 [type]="hideSignup() ? 'password' : 'text'"
                 required
               />
+              <mat-error *ngIf="submitted() && signupPassword.invalid">
+                Password is required
+              </mat-error>
               <button
                 class="hide-btn"
                 mat-icon-button
@@ -83,15 +95,21 @@
                 }}</mat-icon>
               </button>
             </mat-form-field>
-            <mat-form-field appearance="fill">
+            <mat-form-field appearance="outline">
               <mat-label>Confirm Password</mat-label>
               <input
                 matInput
-                [(ngModel)]="confirmPassword"
+                [formControl]="confirmPassword"
                 name="confirmPassword"
                 [type]="hideConfirm() ? 'password' : 'text'"
                 required
               />
+              <mat-error *ngIf="submitted() && confirmPassword.getError('required')">
+                Confirm Password is required
+              </mat-error>
+              <mat-error *ngIf="confirmPassword.touched && confirmPassword.hasError('mismatch')">
+                Passwords do not match
+              </mat-error>
               <button
                 class="hide-btn"
                 mat-icon-button
