@@ -1,7 +1,44 @@
 <div class="container">
   <div class="login-container">
-    <div class="username">Username:</div>
-    <div class="password">Password:</div>
-    <button>Login</button>
+    <mat-tab-group>
+      <mat-tab label="Login">
+        <mat-form-field appearance="fill">
+          <mat-label>Username</mat-label>
+          <input matInput [(ngModel)]="loginUsername" name="username" required />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label appearance="fill">Password</mat-label>
+          <input matInput [(ngModel)]="loginPassword" name="password" [type]="hide() ? 'password' : 'text'" required />
+          <button class="hide-btn" mat-icon-button matSuffix (click)="clickEvent($event)"
+            [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide()">
+            <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+        </mat-form-field>
+        <div class="login-btn">
+          <button mat-raised-button color="primary" type="submit" (click)='onLogin()'>Login</button>
+        </div>
+      </mat-tab>
+      <mat-tab label="Sign-Up">
+        <div class="signup-container">
+          <form (ngSubmit)="onSignUp()">
+            <mat-form-field appearance="fill">
+              <mat-label>Username</mat-label>
+              <input matInput [(ngModel)]="signupUsername" name="username" required />
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+              <mat-label>Password</mat-label>
+              <input matInput [(ngModel)]="signupPassword" name="password" type="password" required />
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput [(ngModel)]="confirmPassword" name="confirmPassword" type="password" required />
+            </mat-form-field>
+            <div class="login-btn">
+              <button mat-raised-button color="accent" type="submit"(click)='onSignUp()'>Sign Up</button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
   </div>
 </div>

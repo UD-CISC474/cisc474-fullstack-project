@@ -1,1 +1,11 @@
-<p>dashboard works!</p>
+
+<div class="container">
+    <mat-grid-list cols="3" rowHeight="250px" gutterSize="10px">
+    @for (tile of tiles; track tile) {
+      <mat-grid-tile
+        [colspan]="tile.cols"
+        [rowspan]="tile.rows"
+        [style.background]="tile.color">{{tile.text}}</mat-grid-tile>
+    }
+  </mat-grid-list>
+</div>
