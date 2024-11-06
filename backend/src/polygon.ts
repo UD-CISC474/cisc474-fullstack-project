@@ -112,9 +112,11 @@ const queryCompanyData = async ({
 
 const queryPortfolio = async ({}: QueryParams) => {};
 
-const queryTickers = async (): Promise<TickerResponse> => {
+// TODO: Figure out a way to list stocks for the current day. When the current day is input, this response is given:
+//{"status":"NOT_AUTHORIZED","request_id":"889c5f07cc40f464b68f8a87098b170e","message":"Attempted to request today's data before end of day. Please upgrade your plan at https://polygon.io/pricing"}
+const queryTickers = async (date: string): Promise<TickerResponse> => {
   const response = await fetch(
-    `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/2023-01-09?adjusted=true&apiKey=${POLYGON_API_KEY}`
+    `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${date}?adjusted=true&apiKey=${POLYGON_API_KEY}`
   );
 
   const res = await response.json();

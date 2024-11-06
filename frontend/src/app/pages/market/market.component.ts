@@ -16,13 +16,17 @@ export class MarketComponent implements OnInit {
 
   constructor(private marketService: MarketService) {}
 
+  // using yesterdays date until we can figure out a way to get up to date stock info
   ngOnInit(): void {
-    this.loadTickers();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const formattedDate = yesterday.toISOString().split('T')[0];
+    this.loadTickers(formattedDate);
   }
 
-  async loadTickers(): Promise<void> {
+  async loadTickers(date: string): Promise<void> {
     try {
-      this.tickers = (await this.marketService.getTickers()).results;
+      this.tickers = (await this.marketService.getTickers(date)).results;
     } catch (error) {
       console.error(`Failed to load tickers`, error);
       this.tickers = [];

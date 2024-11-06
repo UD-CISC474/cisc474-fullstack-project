@@ -12,7 +12,7 @@ import {
 export class MarketService {
   constructor(private http: HttpClient) {}
 
-  getTickers(): Promise<TickerResponse> {
-    return queryTickers();
+  getTickers(date: string): Promise<TickerResponse> {
+    return queryTickers(date);
   }
 }
