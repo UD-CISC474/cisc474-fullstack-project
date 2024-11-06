@@ -19,5 +19,9 @@ export const routes: Routes = [
         (m) => m.PortfolioComponent
       ),
   },
-  { path: 'market', component: MarketComponent },
+  { path: 'market',
+    loadComponent: () =>
+      import('./pages/market/market.component').then(
+        (m) => m.MarketComponent
+      ), },
 ];
