@@ -32,7 +32,6 @@ export class HeaderComponent implements OnInit {
 
   onTabChange(index: number) {
     this.selectedIndex = index;
-    // 탭 클릭 시 라우팅
     if (index === 0) {
       this.router.navigate(['/dashboard']);
     } else if (index === 1) {
