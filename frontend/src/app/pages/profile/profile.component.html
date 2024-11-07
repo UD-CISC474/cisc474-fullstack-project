@@ -11,7 +11,7 @@
               name="username"
               required
             />
-            <mat-error *ngIf="submitted() && loginUsername.invalid">
+            <mat-error *ngIf="loginUsername.hasError('required')">
               Username is required
             </mat-error>
           </mat-form-field>
@@ -24,7 +24,7 @@
               [type]="hideLogin() ? 'password' : 'text'"
               required
             />
-            <mat-error *ngIf="submitted() && signupPassword.invalid">
+            <mat-error *ngIf="loginPassword.hasError('required')">
               Password is required
             </mat-error>
             <button
@@ -65,7 +65,7 @@
                 name="username"
                 required
               />
-              <mat-error *ngIf="submitted() && signupUsername.invalid">
+              <mat-error *ngIf="signupUsername.hasError('required')">
                 Username is required
               </mat-error>
             </mat-form-field>
@@ -78,7 +78,7 @@
                 [type]="hideSignup() ? 'password' : 'text'"
                 required
               />
-              <mat-error *ngIf="submitted() && signupPassword.invalid">
+              <mat-error *ngIf="signupPassword.hasError('required')">
                 Password is required
               </mat-error>
               <button
@@ -104,7 +104,7 @@
                 [type]="hideConfirm() ? 'password' : 'text'"
                 required
               />
-              <mat-error *ngIf="submitted() && confirmPassword.getError('required')">
+              <mat-error *ngIf="confirmPassword.hasError('required')">
                 Confirm Password is required
               </mat-error>
               <mat-error *ngIf="confirmPassword.touched && confirmPassword.hasError('mismatch')">

@@ -31,12 +31,10 @@ import { merge } from 'rxjs';
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })
-
 export class ProfileComponent {
   hideLogin = signal(true);
   hideSignup = signal(true);
   hideConfirm = signal(true);
-  submitted = signal(false);
 
   clickEvent(event: MouseEvent, type: 'login' | 'signup' | 'confirm') {
     if (type === 'login') {
@@ -63,24 +61,31 @@ export class ProfileComponent {
   }
 
   onTabChange(event: any) {
-    this.submitted.set(false); // Reset submitted state when changing tabs
+    if (event.index === 0) {
+      this.loginUsername.reset();
+      this.loginPassword.reset();
+    } else if (event.index === 1) {
+      this.signupUsername.reset();
+      this.signupPassword.reset();
+      this.confirmPassword.reset();
+    }
   }
 
-  // Check if passwords match
   updateMatchMessage() {
     if (this.signupPassword.valid && this.confirmPassword.valid) {
       if (this.signupPassword.value === this.confirmPassword.value) {
-        this.confirmPassword.setErrors(null); // Clear errors if passwords match
+        if (this.confirmPassword.hasError('mismatch')) {
+          this.confirmPassword.setErrors(null);
+        }
       } else {
-        this.confirmPassword.setErrors({ mismatch: true }); // Set mismatch error
+        if (!this.confirmPassword.hasError('mismatch')) {
+          this.confirmPassword.setErrors({ mismatch: true });
+        }
       }
     }
   }
 
-
-
   onLogin() {
-    this.submitted.set(true);
     if (this.loginUsername.invalid || this.loginPassword.invalid) {
       if (this.loginUsername.invalid) {
         console.log('Invalid username');
@@ -88,14 +93,23 @@ export class ProfileComponent {
       if (this.loginPassword.invalid) {
         console.log('Invalid password');
       }
+      this.loginUsername.markAllAsTouched();
+      this.loginPassword.markAllAsTouched();
     } else {
-      console.log('Logging in with:', this.loginUsername.value, this.loginPassword.value);
+      console.log(
+        'Logging in with:',
+        this.loginUsername.value,
+        this.loginPassword.value
+      );
     }
   }
 
   onSignUp() {
-    this.submitted.set(true);
-    if (this.signupUsername.invalid || this.signupPassword.invalid || this.confirmPassword.invalid) {
+    if (
+      this.signupUsername.invalid ||
+      this.signupPassword.invalid ||
+      this.confirmPassword.invalid
+    ) {
       if (this.signupUsername.invalid) {
         console.log('Invalid username');
       }
@@ -105,10 +119,17 @@ export class ProfileComponent {
       if (this.confirmPassword.invalid) {
         console.log('Invalid password confirmation');
       }
+      this.signupUsername.markAllAsTouched();
+      this.signupPassword.markAllAsTouched();
+      this.confirmPassword.markAllAsTouched();
     } else if (this.signupPassword.value !== this.confirmPassword.value) {
       console.log('Passwords do not match');
     } else {
-      console.log('Signing up with:', this.signupUsername.value, this.signupPassword.value);
+      console.log(
+        'Signing up with:',
+        this.signupUsername.value,
+        this.signupPassword.value
+      );
     }
   }
 }
