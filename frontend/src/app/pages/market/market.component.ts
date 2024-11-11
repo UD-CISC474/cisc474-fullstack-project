@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { MarketService } from './market.service';
 import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor } from '@angular/common';
+import dayjs from 'dayjs';
+import { Y } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-market',
@@ -18,15 +20,19 @@ export class MarketComponent implements OnInit {
 
   // using yesterdays date until we can figure out a way to get up to date stock info
   ngOnInit(): void {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const formattedDate = yesterday.toISOString().split('T')[0];
-    this.loadTickers(formattedDate);
+    let yesterday: string;
+    if (dayjs().day().toString() === 'Monday') {
+      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+    } else {
+      yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
+    }
+    this.loadTickers(yesterday);
   }
 
   async loadTickers(date: string): Promise<void> {
     try {
       this.tickers = (await this.marketService.getTickers(date)).results;
+      console.log(this.tickers);
     } catch (error) {
       console.error(`Failed to load tickers`, error);
       this.tickers = [];
