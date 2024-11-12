@@ -22,6 +22,23 @@ export class Controller {
         res.send({ value });
     }
 
+    public async postFirebase(req: express.Request, res: express.Response): Promise<void>{
+        try{
+            const ref = database.ref("/Apple");
+            const message = req.body.message;
+            await ref.set({
+                message: message,
+                timestamp: new Date().toISOString(),
+            });
+
+            res.send({ success: true, message: "Posted to Firebase!"});
+        } catch (error) {
+            const err = error as Error;
+            console.log("Error posting to Firebase: ", err);
+            res.status(500).send({ success: false, error: err.message });
+        }
+    }
+
     public async stockTest(req: express.Request, res: express.Response): Promise<void> {
         //const quote = await yahooFinance.quote('AAPL');
         //res.send({ quote });
