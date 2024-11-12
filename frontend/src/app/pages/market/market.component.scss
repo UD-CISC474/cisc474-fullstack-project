@@ -20,6 +20,23 @@
     margin-bottom: 15px;
   }
 
+  // Search bar styling
+  .search-bar {
+    width: 97.5%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+
+    &:focus {
+      border-color: #2196f3;
+      box-shadow: 0 0 4px rgba(33, 150, 243, 0.4);
+    }
+  }
+
   & > div {
     background-color: #f9f9f9;
     padding: 20px;

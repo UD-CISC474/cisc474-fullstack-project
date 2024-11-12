@@ -1,10 +1,20 @@
 <div class="container">
   <div class="left-section">
     <h2>Stocks</h2>
+
+    <!-- Search Bar -->
+    <input
+      type="text"
+      class="search-bar"
+      placeholder="Search for a ticker..."
+      [(ngModel)]="searchQuery"
+      (input)="filterTickers()"
+    />
+
     <div class="stock-list">
-      
+      <!-- Filtered list of tickers -->
       <div
-        *ngFor="let ticker of tickers"
+        *ngFor="let ticker of filteredTickers"
         class="stock-item"
         (click)="selectTicker(ticker)"
       >
