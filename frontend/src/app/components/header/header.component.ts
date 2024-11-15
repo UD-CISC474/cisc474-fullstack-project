@@ -40,4 +40,9 @@ export class HeaderComponent implements OnInit {
       this.router.navigate(['/market']);
     }
   }
+
+  onLogin() {
+    // this.selectedIndex = 3;
+    this.router.navigate(['/profile']);
+  }
 }
