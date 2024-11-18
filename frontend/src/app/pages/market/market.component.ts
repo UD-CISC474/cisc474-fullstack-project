@@ -3,7 +3,6 @@ import { MarketService } from './market.service';
 import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor } from '@angular/common';
 import dayjs from 'dayjs';
-import { Y } from '@angular/cdk/keycodes';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -11,7 +10,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
   standalone: true,
-  imports: [NgFor,FormsModule],
+  imports: [NgFor, FormsModule],
 })
 export class MarketComponent implements OnInit {
   tickers: TickerResult[] = [];
@@ -37,12 +36,11 @@ export class MarketComponent implements OnInit {
   //   const formattedDate = yesterday.toISOString().split('T')[0];
   //   this.loadTickers(formattedDate);
   // }
-  
 
   async loadTickers(date: string): Promise<void> {
     try {
       const tickerResponse = await this.marketService.getTickers(date);
-      console.log('API Response:', tickerResponse);  // Log to see the response
+      console.log('API Response:', tickerResponse); // Log to see the response
       this.tickers = tickerResponse.results;
       this.filteredTickers = this.tickers; // Initialize filteredTickers
     } catch (error) {
@@ -51,14 +49,14 @@ export class MarketComponent implements OnInit {
       this.filteredTickers = [];
     }
   }
-  
+
   selectTicker(ticker: TickerResult): void {
     this.selectedTicker = ticker;
   }
 
   filterTickers(): void {
     const query = this.searchQuery.toLowerCase().trim();
-    this.filteredTickers = this.tickers.filter(ticker =>
+    this.filteredTickers = this.tickers.filter((ticker) =>
       ticker.T.toLowerCase().includes(query)
     );
   }
