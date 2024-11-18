@@ -107,7 +107,12 @@
               <mat-error *ngIf="confirmPassword.hasError('required')">
                 Confirm Password is required
               </mat-error>
-              <mat-error *ngIf="confirmPassword.touched && confirmPassword.hasError('mismatch')">
+              <mat-error
+                *ngIf="
+                  confirmPassword.touched &&
+                  confirmPassword.hasError('mismatch')
+                "
+              >
                 Passwords do not match
               </mat-error>
               <button

@@ -3,7 +3,6 @@ import { MarketService } from './market.service';
 import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor } from '@angular/common';
 import dayjs from 'dayjs';
-import { Y } from '@angular/cdk/keycodes';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -34,10 +33,18 @@ export class MarketComponent implements OnInit {
     }
     this.loadTickers(yesterday);
   }
+  // ngOnInit(): void {
+  //   console.log('ngOnInit is called');
+  //   const yesterday = new Date();
+  //   yesterday.setDate(yesterday.getDate() - 1);
+  //   const formattedDate = yesterday.toISOString().split('T')[0];
+  //   this.loadTickers(formattedDate);
+  // }
 
   async loadTickers(date: string): Promise<void> {
     try {
       const tickerResponse = await this.marketService.getTickers(date);
+      console.log('API Response:', tickerResponse); // Log to see the response
       this.tickers = tickerResponse.results;
       this.selectedTicker = this.tickers[0];
       this.filterTickers();

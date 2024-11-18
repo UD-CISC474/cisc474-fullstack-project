@@ -1,41 +1,65 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component } from '@angular/core';
 import {
   FormControl,
+  Validators,
   FormsModule,
   ReactiveFormsModule,
-  Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from '@angular/fire/auth';
+import { Database, ref, set } from '@angular/fire/database';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, signal } from '@angular/core';
 import { merge } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTabsModule,
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    CommonModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatTabsModule,
+    MatIconModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.scss',
+  styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent {
+  // State for toggling password visibility
   hideLogin = signal(true);
   hideSignup = signal(true);
   hideConfirm = signal(true);
 
+  // Form controls for login and signup
+  loginUsername = new FormControl('', [Validators.required]);
+  loginPassword = new FormControl('', [Validators.required]);
+  signupUsername = new FormControl('', [Validators.required]);
+  signupPassword = new FormControl('', [Validators.required]);
+  confirmPassword = new FormControl('', [Validators.required]);
+
+  // Constructor to inject Firebase Auth and Database services
+  constructor(private auth: Auth, private db: Database) {
+    // Listen for changes in confirmPassword to validate password matching
+    merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.updateMatchMessage());
+  }
+
+  // Toggles password visibility for login, signup, or confirm password fields
   clickEvent(event: MouseEvent, type: 'login' | 'signup' | 'confirm') {
     if (type === 'login') {
       this.hideLogin.set(!this.hideLogin());
@@ -47,19 +71,7 @@ export class ProfileComponent {
     event.stopPropagation();
   }
 
-  loginUsername = new FormControl('', [Validators.required]);
-  loginPassword = new FormControl('', [Validators.required]);
-  signupUsername = new FormControl('', [Validators.required]);
-  signupPassword = new FormControl('', [Validators.required]);
-  confirmPassword = new FormControl('', [Validators.required]);
-
-  constructor() {
-    // Listen for changes in confirmPassword to validate password matching
-    merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.updateMatchMessage());
-  }
-
+  // Resets form data when switching between tabs
   onTabChange(event: any) {
     if (event.index === 0) {
       this.loginUsername.reset();
@@ -71,6 +83,7 @@ export class ProfileComponent {
     }
   }
 
+  // Validates if signup password and confirm password match
   updateMatchMessage() {
     if (this.signupPassword.valid && this.confirmPassword.valid) {
       if (this.signupPassword.value === this.confirmPassword.value) {
@@ -85,51 +98,63 @@ export class ProfileComponent {
     }
   }
 
-  onLogin() {
+  // Handles user login
+  async onLogin() {
     if (this.loginUsername.invalid || this.loginPassword.invalid) {
-      if (this.loginUsername.invalid) {
-        console.log('Invalid username');
-      }
-      if (this.loginPassword.invalid) {
-        console.log('Invalid password');
-      }
+      console.error('Please fill in the required fields');
       this.loginUsername.markAllAsTouched();
       this.loginPassword.markAllAsTouched();
-    } else {
-      console.log(
-        'Logging in with:',
-        this.loginUsername.value,
-        this.loginPassword.value
-      );
+      return;
+    }
+
+    try {
+      const email = `${this.loginUsername.value}@example.com`;
+      const password = this.loginPassword.value!;
+      await signInWithEmailAndPassword(this.auth, email, password);
+      console.log('User logged in successfully');
+    } catch (error) {
+      console.error('Login failed:', error);
     }
   }
 
-  onSignUp() {
+  // Handles user sign-up
+  async onSignUp() {
     if (
       this.signupUsername.invalid ||
       this.signupPassword.invalid ||
       this.confirmPassword.invalid
     ) {
-      if (this.signupUsername.invalid) {
-        console.log('Invalid username');
-      }
-      if (this.signupPassword.invalid) {
-        console.log('Invalid password');
-      }
-      if (this.confirmPassword.invalid) {
-        console.log('Invalid password confirmation');
-      }
+      console.error('Please fill in the required fields');
       this.signupUsername.markAllAsTouched();
       this.signupPassword.markAllAsTouched();
       this.confirmPassword.markAllAsTouched();
-    } else if (this.signupPassword.value !== this.confirmPassword.value) {
-      console.log('Passwords do not match');
-    } else {
-      console.log(
-        'Signing up with:',
-        this.signupUsername.value,
-        this.signupPassword.value
+      return;
+    }
+
+    if (this.signupPassword.value !== this.confirmPassword.value) {
+      console.error('Passwords do not match');
+      return;
+    }
+
+    try {
+      const email = `${this.signupUsername.value}@example.com`;
+      const password = this.signupPassword.value!;
+      const userCredential = await createUserWithEmailAndPassword(
+        this.auth,
+        email,
+        password
       );
+
+      const userId = userCredential.user.uid;
+      // Store user information in Firebase Realtime Database
+      await set(ref(this.db, 'users/' + userId), {
+        username: this.signupUsername.value,
+        portfolio: {},
+      });
+
+      console.log('User signed up successfully');
+    } catch (error) {
+      console.error('Sign-up failed:', error);
     }
   }
 }
