@@ -12,15 +12,32 @@
     />
 
     <div class="stock-list">
-      <!-- Filtered list of tickers -->
+      <!-- Paginated and filtered list of tickers -->
       <div
-        *ngFor="let ticker of filteredTickers"
+        *ngFor="let ticker of paginatedTickers"
         class="stock-item"
         (click)="selectTicker(ticker)"
       >
         <span class="stock-name">{{ ticker.T }}</span> -
         <span class="stock-price">{{ ticker.c }} USD</span>
       </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+      <button
+        (click)="goToPage(currentPage - 1)"
+        [disabled]="currentPage === 1"
+      >
+        Previous
+      </button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button
+        (click)="goToPage(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+      >
+        Next
+      </button>
     </div>
   </div>
 
