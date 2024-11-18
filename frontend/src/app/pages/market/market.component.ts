@@ -11,13 +11,17 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
   standalone: true,
-  imports: [NgFor,FormsModule],
+  imports: [NgFor, FormsModule],
 })
 export class MarketComponent implements OnInit {
   tickers: TickerResult[] = [];
   filteredTickers: TickerResult[] = [];
-  searchQuery: string = ''; // Bind to search input
+  searchQuery: string = '';
   selectedTicker: TickerResult | null = null;
+  currentPage: number = 1;
+  itemsPerPage: number = 50;
+  totalPages: number = 0;
+  paginatedTickers: TickerResult[] = [];
 
   constructor(private marketService: MarketService) {}
 
@@ -35,11 +39,28 @@ export class MarketComponent implements OnInit {
     try {
       const tickerResponse = await this.marketService.getTickers(date);
       this.tickers = tickerResponse.results;
-      this.filteredTickers = this.tickers; // Initialize filteredTickers
+      this.selectedTicker = this.tickers[0];
+      this.filterTickers();
     } catch (error) {
       console.error(`Failed to load tickers`, error);
       this.tickers = [];
       this.filteredTickers = [];
+    }
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(
+      this.filteredTickers.length / this.itemsPerPage
+    );
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedTickers = this.filteredTickers.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
     }
   }
 
@@ -49,8 +70,10 @@ export class MarketComponent implements OnInit {
 
   filterTickers(): void {
     const query = this.searchQuery.toLowerCase().trim();
-    this.filteredTickers = this.tickers.filter(ticker =>
+    this.filteredTickers = this.tickers.filter((ticker) =>
       ticker.T.toLowerCase().includes(query)
     );
+    this.currentPage = 1;
+    this.updatePagination();
   }
 }
