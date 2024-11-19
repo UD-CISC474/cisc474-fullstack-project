@@ -11,6 +11,8 @@ export class ApiRouter {
     this.router.post("/hello", this.controller.postHello);
     this.router.get("/firebase", this.controller.firebaseTest);
     this.router.post("/stock", this.controller.stockTest);
+    this.router.post("/all", this.controller.postAllStocks);
+    this.router.get("/all", this.controller.getAllStocks);
     this.router.post("/firebase", this.controller.postFirebase);
     this.router.post("/user/stock", this.controller.postUserStock);
     return this.router;

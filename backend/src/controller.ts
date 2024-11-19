@@ -1,6 +1,6 @@
 import express from "express";
 import { database } from "./firebase";
-import { queryCompanyDataNoCache } from "./polygon";
+import { queryCompanyDataNoCache, queryTickers, TickerResult} from "./polygon";
 
 class MyObject {
   constructor(public msg: string, public value: number = 42) {}
@@ -69,6 +69,55 @@ export class Controller {
       const err = error as Error;
       console.error("Error posting stocks to Firebase: ", err);
       res.status(500).send({ success: false, error: err.message });
+    }
+  }
+
+  public async postAllStocks(
+    req: express.Request,
+    res: express.Response
+  ): Promise<void> {
+    try {
+        const date = req.body.date || "2024-11-15";
+        const result = await queryTickers(date);
+        const sanitizedResults = result.results.map((ticker) => {
+            const sanitizedTicker: Record<string, any> = { ...ticker };
+            Object.keys(sanitizedTicker).forEach((key) => {
+              if (sanitizedTicker[key] === undefined) {
+                delete sanitizedTicker[key];
+              }
+            });
+            return sanitizedTicker as TickerResult;
+          });
+          
+          const sanitizedResult = { ...result, results: sanitizedResults };
+
+        const ref = database.ref(`/all`);
+        await ref.set({ stocks: sanitizedResult });
+        res.send({ success: true, message: `Posted all stocks to the Firebase`});
+    } catch (error) {
+        const err = error as Error;
+        console.error("Error posting all stocks to Firebase: ", err);
+        res.status(500).send({success: false, error: err.message});
+    }
+  }
+
+  public async getAllStocks(
+    req: express.Request,
+    res: express.Response
+  ): Promise<void> {
+    try {
+        const ref = database.ref(`/all/stocks/results`);
+        const snapshot = await ref.once('value');
+        if (snapshot.exists()) {
+        const stockData = snapshot.val();
+            res.send({ success: true, data: stockData });
+        } else {
+            res.status(404).send({ success: false, message: "No stock data found." });
+        }
+    } catch (error) {
+        const err = error as Error;
+        console.error("Error retrieving stock data:", err);
+        res.status(500).send({ success: false, error: err.message });
     }
   }
 
