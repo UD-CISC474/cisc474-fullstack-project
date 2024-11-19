@@ -4,6 +4,7 @@ import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
+import { getAuth, onAuthStateChanged, User } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-market',
@@ -35,7 +36,20 @@ export class MarketComponent implements OnInit {
     } else {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
     }
+
     this.loadTickers(yesterday);
+
+    const auth = getAuth();
+
+    // Listen for authentication state changes
+    onAuthStateChanged(auth, (user: User | null) => {
+      if (user) {
+        this.userId = user.uid; // Set authenticated user ID
+        console.log(`Authenticated user: ${this.userId}`);
+      } else {
+        console.log('No user authenticated. Using default-user.');
+      }
+    });
   }
 
   async loadTickers(date: string): Promise<void> {
