@@ -1,5 +1,6 @@
 import express from "express";
 import { database } from "./firebase";
+import { queryCompanyDataNoCache } from "./polygon";
 
 class MyObject {
   constructor(public msg: string, public value: number = 42) {}
@@ -36,7 +37,6 @@ export class Controller {
         message: message,
         timestamp: new Date().toISOString(),
       });
-
       res.send({ success: true, message: "Posted to Firebase!" });
     } catch (error) {
       const err = error as Error;
@@ -49,8 +49,27 @@ export class Controller {
     req: express.Request,
     res: express.Response
   ): Promise<void> {
-    //const quote = await yahooFinance.quote('AAPL');
-    //res.send({ quote });
+    try {
+      // Extract parameters from the request body, with defaults
+      const ticker = req.body.ticker || "AAPL"; // Default to "AAPL"
+      const from = req.body.from || "2024-11-11"; // Default to "2024-11-10"
+      const to = req.body.to || "2024-11-15"; // Default to "2024-11-15"
+      const interval = req.body.interval || "day"; // Default to "day"
+  
+      // Fetch stock data
+      const result = await queryCompanyDataNoCache({ ticker, from, to, interval });
+  
+      // Write data to Firebase
+      const ref = database.ref(`/stocks/${ticker}`);
+      await ref.set({ data: result });
+  
+      // Send success response
+      res.send({ success: true, message: `Posted ${ticker} stock data to Firebase!` });
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error posting stocks to Firebase: ", err);
+      res.status(500).send({ success: false, error: err.message });
+    }
   }
 
   public async postUserStock(
