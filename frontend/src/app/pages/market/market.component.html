@@ -1,25 +1,35 @@
 <div class="container">
+  <!-- Left Section -->
   <div class="left-section">
     <h2>Stocks</h2>
 
     <!-- Search Bar -->
-    <input
-      type="text"
-      class="search-bar"
-      placeholder="Search for a ticker..."
-      [(ngModel)]="searchQuery"
-      (input)="filterTickers()"
-    />
+    <div class="search-bar-container">
+      <input
+        type="text"
+        class="search-bar"
+        placeholder="Search for a ticker..."
+        [(ngModel)]="searchQuery"
+        (input)="filterTickers()"
+        aria-label="Search for a stock ticker"
+      />
+    </div>
 
+    <!-- Stock List -->
     <div class="stock-list">
-      <!-- Paginated and filtered list of tickers -->
       <div
         *ngFor="let ticker of paginatedTickers"
         class="stock-item"
         (click)="selectTicker(ticker)"
+        tabindex="0"
+        (keyup.enter)="selectTicker(ticker)"
+        role="button"
       >
-        <span class="stock-name">{{ ticker.T }}</span> -
+        <span class="stock-name">{{ ticker.T }}</span>
         <span class="stock-price">{{ ticker.c }} USD</span>
+      </div>
+      <div *ngIf="paginatedTickers.length === 0" class="no-results">
+        No stocks found.
       </div>
     </div>
 
@@ -28,35 +38,73 @@
       <button
         (click)="goToPage(currentPage - 1)"
         [disabled]="currentPage === 1"
+        aria-label="Go to previous page"
       >
         Previous
       </button>
-      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <span aria-live="polite">Page {{ currentPage }} of {{ totalPages }}</span>
       <button
         (click)="goToPage(currentPage + 1)"
         [disabled]="currentPage === totalPages"
+        aria-label="Go to next page"
       >
         Next
       </button>
     </div>
   </div>
 
+  <!-- Right Section -->
   <div class="right-section">
     <div class="graph-content">
-      <div class="graph">
-        <div class="graph-header">
-          <div>{{ selectedTicker?.T || "Select a Stock" }}</div>
-          <div>{{ selectedTicker?.c || "Loading..." }} USD</div>
-        </div>
-        <div>Insert Graph Here</div>
-        <div class="graph-buttons-container">
+      <!-- Selected Stock Details -->
+      <div class="graph-header">
+        <h3>{{ selectedTicker?.T || "Select a Stock" }}</h3>
+        <p>
+          Current Price:
+          <span> {{ selectedTicker?.c || "Loading" }} USD </span>
+        </p>
+        <ng-template #noSelection>
+          <span>Loading...</span>
+        </ng-template>
+
+        <!-- Stock Purchase Section -->
+        <div class="purchase-controls">
+          <label for="stock-amount">Amount:</label>
+          <input
+            id="stock-amount"
+            type="number"
+            [(ngModel)]="amount"
+            min="1"
+            aria-label="Enter the number of shares"
+          />
           <button
-            *ngFor="let period of ['1D', '5D', '1M', '6M', '1Y', '2Y']"
-            class="graph-button"
+            (click)="buyStock(amount)"
+            [disabled]="!selectedTicker || amount <= 0"
+            aria-label="Buy selected stock"
           >
-            {{ period }}
+            Buy
           </button>
         </div>
+        <div class="amount-buttons">
+          <button (click)="increaseAmount()">Increase</button>
+          <button (click)="decreaseAmount()">Decrease</button>
+        </div>
+      </div>
+
+      <!-- Graph Placeholder -->
+      <div class="graph">
+        <div>Insert Graph Here</div>
+      </div>
+
+      <!-- Graph Period Buttons -->
+      <div class="graph-buttons-container">
+        <button
+          *ngFor="let period of ['1D', '5D', '1M', '6M', '1Y', '2Y']"
+          class="graph-button"
+          (click)="updateGraphPeriod(period)"
+        >
+          {{ period }}
+        </button>
       </div>
     </div>
   </div>
