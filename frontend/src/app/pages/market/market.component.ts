@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { MarketService } from './market.service';
 import { TickerResult } from '../../../../../backend/src/polygon';
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
+import { getAuth, onAuthStateChanged, User } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-market',
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
   standalone: true,
-  imports: [NgFor, FormsModule],
+  imports: [NgFor, FormsModule, NgIf],
 })
 export class MarketComponent implements OnInit {
   tickers: TickerResult[] = [];
@@ -22,6 +23,10 @@ export class MarketComponent implements OnInit {
   totalPages: number = 0;
   paginatedTickers: TickerResult[] = [];
 
+  userId: string = 'default-user'; // Placeholder for user ID
+  amount: number = 1;
+  purchaseMessage: string = '';
+
   constructor(private marketService: MarketService) {}
 
   ngOnInit(): void {
@@ -31,20 +36,25 @@ export class MarketComponent implements OnInit {
     } else {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
     }
+
     this.loadTickers(yesterday);
+
+    const auth = getAuth();
+
+    // Listen for authentication state changes
+    onAuthStateChanged(auth, (user: User | null) => {
+      if (user) {
+        this.userId = user.uid; // Set authenticated user ID
+        console.log(`Authenticated user: ${this.userId}`);
+      } else {
+        console.log('No user authenticated. Using default-user.');
+      }
+    });
   }
-  // ngOnInit(): void {
-  //   console.log('ngOnInit is called');
-  //   const yesterday = new Date();
-  //   yesterday.setDate(yesterday.getDate() - 1);
-  //   const formattedDate = yesterday.toISOString().split('T')[0];
-  //   this.loadTickers(formattedDate);
-  // }
 
   async loadTickers(date: string): Promise<void> {
     try {
       const tickerResponse = await this.marketService.getTickers(date);
-      console.log('API Response:', tickerResponse); // Log to see the response
       this.tickers = tickerResponse.results;
       this.selectedTicker = this.tickers[0];
       this.filterTickers();
@@ -53,6 +63,46 @@ export class MarketComponent implements OnInit {
       this.tickers = [];
       this.filteredTickers = [];
     }
+  }
+
+  increaseAmount(): void {
+    this.amount++;
+  }
+
+  decreaseAmount(): void {
+    if (this.amount > 1) {
+      this.amount--;
+    }
+  }
+
+  updateGraphPeriod(period: string): void {
+    console.log(`Graph updated for period: ${period}`);
+    // Placeholder for graph update
+  }
+
+  buyStock(amount: number): void {
+    if (!this.selectedTicker || amount <= 0) {
+      this.purchaseMessage = 'Please select a stock and enter a valid amount.';
+      return;
+    }
+
+    const payload = {
+      userId: this.userId,
+      stockSymbol: this.selectedTicker.T,
+      shares: amount,
+      price: this.selectedTicker.c,
+    };
+
+    this.marketService.purchaseStock(payload).subscribe({
+      next: (response) => {
+        this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker?.T}!`;
+        console.log('Purchase Response:', response);
+      },
+      error: (error) => {
+        this.purchaseMessage = 'Failed to purchase stock. Try again.';
+        console.error('Purchase Error:', error);
+      },
+    });
   }
 
   updatePagination(): void {
@@ -73,6 +123,7 @@ export class MarketComponent implements OnInit {
 
   selectTicker(ticker: TickerResult): void {
     this.selectedTicker = ticker;
+    this.amount = 1;
   }
 
   filterTickers(): void {

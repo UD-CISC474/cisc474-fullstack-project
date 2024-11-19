@@ -20,6 +20,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, signal } from '@angular/core';
 import { merge } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -52,7 +53,11 @@ export class ProfileComponent {
   confirmPassword = new FormControl('', [Validators.required]);
 
   // Constructor to inject Firebase Auth and Database services
-  constructor(private auth: Auth, private db: Database) {
+  constructor(
+    private auth: Auth,
+    private db: Database,
+    private router: Router
+  ) {
     // Listen for changes in confirmPassword to validate password matching
     merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
       .pipe(takeUntilDestroyed())
@@ -112,6 +117,7 @@ export class ProfileComponent {
       const password = this.loginPassword.value!;
       await signInWithEmailAndPassword(this.auth, email, password);
       console.log('User logged in successfully');
+      this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -153,6 +159,7 @@ export class ProfileComponent {
       });
 
       console.log('User signed up successfully');
+      this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Sign-up failed:', error);
     }

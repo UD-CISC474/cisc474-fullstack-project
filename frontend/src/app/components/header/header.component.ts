@@ -9,7 +9,7 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
   standalone: true,
   imports: [MatToolbarModule, MatTabsModule, MatButtonModule, RouterLink],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
   selectedIndex = 0;
