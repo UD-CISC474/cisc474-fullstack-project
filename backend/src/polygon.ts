@@ -140,5 +140,5 @@ const queryTickers = async (date: string): Promise<TickerResponse> => {
   };
 };
 
-export { queryCompanyData, queryPortfolio, queryTickers };
+export { queryCompanyData, queryCompanyDataNoCache, queryPortfolio, queryTickers };
 export type { TickerResult, TickerResponse };
