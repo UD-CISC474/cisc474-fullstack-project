@@ -65,6 +65,12 @@
           Current Price:
           <span> {{ selectedTicker?.c || "Loading" }} USD </span>
         </p>
+        <p>
+          You own:
+          <span>{{ selectedTicker?.us || "0" }}</span>
+          <span> shares, totaling to $</span>
+          <span> {{ selectedTicker?.uv || "0" }} USD </span>
+        </p>
         <ng-template #noSelection>
           <span>Loading...</span>
         </ng-template>
@@ -73,31 +79,38 @@
         <div class="purchase-controls">
           <label for="stock-amount">Amount:</label>
           <div class="amount-buttons">
-            <button mat-icon-button (click)="decreaseAmount()" [disabled]="amount === 1">
+            <button
+              mat-icon-button
+              (click)="decreaseAmount()"
+              [disabled]="amount === 1"
+            >
               <mat-icon>remove</mat-icon>
             </button>
             <input
-            id="stock-amount"
-            type="number"
-            [(ngModel)]="amount"
-            min="1"
-            aria-label="Enter the number of shares"
-          />
-          <button mat-icon-button (click)="increaseAmount()">
-            <mat-icon>add</mat-icon>
-          </button>
+              id="stock-amount"
+              type="number"
+              [(ngModel)]="amount"
+              min="1"
+              aria-label="Enter the number of shares"
+            />
+            <button mat-icon-button (click)="increaseAmount()">
+              <mat-icon>add</mat-icon>
+            </button>
           </div>
           <div>
             <button
-            (click)="buyStock(amount)"
-            [disabled]="!selectedTicker || amount <= 0"
-            aria-label="Buy selected stock"
-          >
-            Buy
-          </button>
-          <button (click)="sellStock(amount)" aria-label="Sell selected stock">
-            Sell
-          </button>
+              (click)="buyStock(amount)"
+              [disabled]="!selectedTicker || amount <= 0"
+              aria-label="Buy selected stock"
+            >
+              Buy
+            </button>
+            <button
+              (click)="sellStock(amount)"
+              aria-label="Sell selected stock"
+            >
+              Sell
+            </button>
           </div>
         </div>
       </div>
