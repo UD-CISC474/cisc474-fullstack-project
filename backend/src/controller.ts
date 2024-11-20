@@ -184,12 +184,9 @@ export class Controller {
         return;
       }
 
-      console.log(`userId: ${userId}`);
       const ref = database.ref(`/users/${userId}/stocks`);
       const stocksSnapshot = await ref.get();
       const stocks = stocksSnapshot.val();
-
-      console.log(`stocks: ${JSON.stringify(stocks)}`);
 
       if (!stocks) {
         res.status(404).send({

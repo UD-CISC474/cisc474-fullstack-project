@@ -4,7 +4,14 @@ import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { getAuth, onAuthStateChanged, User } from '@angular/fire/auth';
+import { getAuth, onAuthStateChanged, user, User } from '@angular/fire/auth';
+import { Observable } from 'rxjs';
+
+interface Stock {
+  stockSymbol: string;
+  shares: number;
+  price: number;
+}
 
 @Component({
   selector: 'app-market',
@@ -106,23 +113,35 @@ export class MarketComponent implements OnInit {
     });
   }
 
-  sellStock(amount: number): void {
-    console.log(this.userId);
-    if (!this.selectedTicker || amount <= 0) {
-      this.purchaseMessage = 'Please select a stock and enter a valid amount.';
-      return;
-    }
+  getStocks(): Promise<any> {
+    return this.marketService.getUserStocks(this.userId).toPromise();
+  }
 
-    this.marketService.getUserStocks(this.userId).subscribe({
-      next: (response) => {
-        this.sellMessage = `Successfully fetched user stocks!`;
-        console.log('Fetch Response:', response);
-      },
-      error: (error) => {
-        this.sellMessage = 'Failed to fetch user stocks. Try again.';
-        console.error('Fetch Error:', error);
-      },
-    });
+  async sellStock(amount: number): Promise<void> {
+    try {
+      const response = await this.getStocks();
+      const userStocks: { [key: string]: Stock } = response.stocks;
+      const userStocksArray: Stock[] = Object.values(userStocks);
+
+      if (userStocksArray && userStocksArray.length > 0) {
+        const stockToSell = userStocksArray.find(
+          (stock) =>
+            stock.stockSymbol === this.selectedTicker?.T &&
+            stock.price === this.selectedTicker?.c
+        );
+
+        if (stockToSell) {
+          console.log(`Selling ${amount} shares of ${stockToSell.stockSymbol}`);
+          // Add logic to sell the stock here
+        } else {
+          console.log('Selected stock not found in user holdings');
+        }
+      } else {
+        console.log('No stocks found in user holdings');
+      }
+    } catch (error) {
+      console.error('Error fetching stocks:', error);
+    }
   }
 
   updatePagination(): void {
