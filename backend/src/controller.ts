@@ -169,7 +169,7 @@ export class Controller {
     }
   }
 
-  public async deleteUserStock(
+  public async getUserStock(
     req: express.Request,
     res: express.Response
   ): Promise<void> {
@@ -205,6 +205,59 @@ export class Controller {
       const err = error as Error;
       console.error("Error fetching user stocks: ", err);
       res.status(500).send({ success: false, error: err.message });
+    }
+  }
+
+  public async updateUserStock(
+    req: express.Request,
+    res: express.Response
+  ): Promise<void> {
+    try {
+      const { userId, stockSymbol, shares, price, stockId } = req.body;
+
+      if (!userId || !stockId || !stockSymbol || !price) {
+        res.status(400).send({
+          success: false,
+          message:
+            "Missing required fields: userId, stockId, stockSymbol, shares, or price",
+        });
+        return;
+      }
+
+      const ref = database.ref(`/users/${userId}/stocks/${stockId}`);
+
+      if (shares <= 0) {
+        await ref.remove();
+        res.status(200).send({
+          success: true,
+          message: "All shares sold, removing entry",
+        });
+        return;
+      }
+
+      const stockUpdate = {
+        stockSymbol,
+        shares,
+        price,
+        timestamp: new Date().toISOString(),
+      };
+
+      await ref.update(stockUpdate);
+
+      res.send({
+        success: true,
+        message: "Stock updated successfully!",
+        stockUpdate,
+      });
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error updating stock in Firebase: ", err.message);
+
+      res.status(500).send({
+        success: false,
+        message: "Internal server error",
+        error: err.message,
+      });
     }
   }
 }

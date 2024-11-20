@@ -15,7 +15,8 @@ export class ApiRouter {
     this.router.get("/all", this.controller.getAllStocks);
     this.router.post("/firebase", this.controller.postFirebase);
     this.router.post("/user/stock", this.controller.postUserStock);
-    this.router.get("/user/stock", this.controller.deleteUserStock);
+    this.router.get("/user/stock", this.controller.getUserStock);
+    this.router.put("/user/stock", this.controller.updateUserStock);
     return this.router;
   }
 }

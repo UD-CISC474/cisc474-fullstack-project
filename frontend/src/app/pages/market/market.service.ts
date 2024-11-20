@@ -32,4 +32,16 @@ export class MarketService {
     const params = new HttpParams().set('userId', userId);
     return this.http.get(apiUrl, { params });
   }
+
+  updateUserStocks(payload: {
+    userId: string;
+    stockSymbol: string;
+    shares: number;
+    price: number;
+    stockId: string;
+  }): Observable<any> {
+    console.log('Payload being sent to backend:', payload);
+    const apiUrl = 'http://localhost:3000/api/user/stock';
+    return this.http.put(apiUrl, payload);
+  }
 }

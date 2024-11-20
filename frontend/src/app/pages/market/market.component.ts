@@ -121,18 +121,50 @@ export class MarketComponent implements OnInit {
     try {
       const response = await this.getStocks();
       const userStocks: { [key: string]: Stock } = response.stocks;
-      const userStocksArray: Stock[] = Object.values(userStocks);
+
+      // Convert userStocks to an array of [key, stock] pairs
+      const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
+        userStocks
+      ).map(([id, stock]) => ({
+        id,
+        stock,
+      }));
 
       if (userStocksArray && userStocksArray.length > 0) {
         const stockToSell = userStocksArray.find(
-          (stock) =>
+          ({ stock }) =>
             stock.stockSymbol === this.selectedTicker?.T &&
-            stock.price === this.selectedTicker?.c
+            stock.price === this.selectedTicker?.c &&
+            amount <= stock.shares
         );
 
         if (stockToSell) {
-          console.log(`Selling ${amount} shares of ${stockToSell.stockSymbol}`);
-          // Add logic to sell the stock here
+          console.log(
+            `Selling ${amount} shares of ${stockToSell.stock.stockSymbol}`
+          );
+
+          if (!this.selectedTicker || amount <= 0) {
+            this.purchaseMessage =
+              'Please select a stock and enter a valid amount.';
+            return;
+          }
+
+          const payload = {
+            userId: this.userId,
+            stockSymbol: this.selectedTicker.T,
+            shares: stockToSell.stock.shares - amount,
+            price: this.selectedTicker.c,
+            stockId: stockToSell.id,
+          };
+
+          this.marketService.updateUserStocks(payload).subscribe({
+            next: (response) => {
+              console.log('Update successful:', response);
+            },
+            error: (error) => {
+              console.error('Error updating stock:', error);
+            },
+          });
         } else {
           console.log('Selected stock not found in user holdings');
         }
