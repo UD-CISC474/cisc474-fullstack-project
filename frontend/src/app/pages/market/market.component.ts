@@ -12,7 +12,18 @@ interface Stock {
   shares: number;
   price: number;
 }
-
+interface SelectedTicker {
+  T: string; // Ticker symbol
+  c: number; // Close price
+  h: number; // High price
+  l: number; // Low price
+  n: number; // Number of trades
+  o: number; // Open price
+  t: number; // Timestamp
+  v: number; // Volume
+  vw: number; // Volume weighted average price
+  uv: number; // total user value owned in this stock
+}
 @Component({
   selector: 'app-market',
   templateUrl: './market.component.html',
@@ -24,7 +35,7 @@ export class MarketComponent implements OnInit {
   tickers: TickerResult[] = [];
   filteredTickers: TickerResult[] = [];
   searchQuery: string = '';
-  selectedTicker: TickerResult | null = null;
+  selectedTicker: SelectedTicker | null = null;
   currentPage: number = 1;
   itemsPerPage: number = 50;
   totalPages: number = 0;
@@ -49,7 +60,6 @@ export class MarketComponent implements OnInit {
 
     const auth = getAuth();
 
-    // Listen for authentication state changes
     onAuthStateChanged(auth, (user: User | null) => {
       if (user) {
         this.userId = user.uid; // Set authenticated user ID
@@ -64,7 +74,20 @@ export class MarketComponent implements OnInit {
     try {
       const tickerResponse = await this.marketService.getTickers(date);
       this.tickers = tickerResponse.results;
-      this.selectedTicker = this.tickers[0];
+      const totalValue = await this.getUserStock();
+      this.selectedTicker = {
+        T: this.tickers[0].T,
+        c: this.tickers[0].c,
+        h: this.tickers[0].h,
+        l: this.tickers[0].l,
+        n: this.tickers[0].n,
+        o: this.tickers[0].o,
+        t: this.tickers[0].t,
+        v: this.tickers[0].v,
+        vw: this.tickers[0].vw,
+        uv: 0,
+      };
+      this.selectedTicker.uv = totalValue;
       this.filterTickers();
     } catch (error) {
       console.error(`Failed to load tickers`, error);
@@ -117,12 +140,38 @@ export class MarketComponent implements OnInit {
     return this.marketService.getUserStocks(this.userId).toPromise();
   }
 
+  async getUserStock() {
+    try {
+      const response = await this.getStocks();
+      const userStocks: { [key: string]: Stock } = response.stocks;
+
+      const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
+        userStocks
+      ).map(([id, stock]) => ({
+        id,
+        stock,
+      }));
+
+      let totalValue = 0;
+      if (userStocksArray && userStocksArray.length > 0) {
+        const stocks = userStocksArray.filter(
+          ({ stock }) => stock.stockSymbol === this.selectedTicker?.T
+        );
+        stocks.map(({ stock }) => (totalValue += stock.price * stock.shares));
+      }
+      console.log(totalValue);
+      return totalValue;
+    } catch (error) {
+      console.error('Error fetching stocks:', error);
+      return 0;
+    }
+  }
+
   async sellStock(amount: number): Promise<void> {
     try {
       const response = await this.getStocks();
       const userStocks: { [key: string]: Stock } = response.stocks;
 
-      // Convert userStocks to an array of [key, stock] pairs
       const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
         userStocks
       ).map(([id, stock]) => ({
@@ -192,8 +241,21 @@ export class MarketComponent implements OnInit {
     }
   }
 
-  selectTicker(ticker: TickerResult): void {
-    this.selectedTicker = ticker;
+  async selectTicker(ticker: TickerResult): Promise<void> {
+    this.selectedTicker = {
+      T: ticker.T,
+      c: ticker.c,
+      h: ticker.h,
+      l: ticker.l,
+      n: ticker.n,
+      o: ticker.o,
+      t: ticker.t,
+      v: ticker.v,
+      vw: ticker.vw,
+      uv: 0,
+    };
+    const totalValue = await this.getUserStock();
+    this.selectedTicker.uv = totalValue;
     this.amount = 1;
   }
 

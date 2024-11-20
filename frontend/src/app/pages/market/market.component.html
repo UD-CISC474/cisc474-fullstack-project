@@ -63,6 +63,10 @@
           Current Price:
           <span> {{ selectedTicker?.c || "Loading" }} USD </span>
         </p>
+        <p>
+          You own:
+          <span> {{ selectedTicker?.uv || "Loading" }} USD </span>
+        </p>
         <ng-template #noSelection>
           <span>Loading...</span>
         </ng-template>
@@ -87,10 +91,6 @@
           <button (click)="sellStock(amount)" aria-label="Sell selected stock">
             Sell
           </button>
-        </div>
-        <div class="amount-buttons">
-          <button (click)="increaseAmount()">Increase</button>
-          <button (click)="decreaseAmount()">Decrease</button>
         </div>
       </div>
 

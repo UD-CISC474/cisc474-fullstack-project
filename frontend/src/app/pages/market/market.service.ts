@@ -6,6 +6,7 @@ import {
   TickerResponse,
 } from '../../../../../backend/src/polygon';
 import { Observable } from 'rxjs';
+import { user } from '@angular/fire/auth';
 
 @Injectable({
   providedIn: 'root',
