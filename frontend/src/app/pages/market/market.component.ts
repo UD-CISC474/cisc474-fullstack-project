@@ -24,6 +24,7 @@ interface SelectedTicker {
   v: number; // Volume
   vw: number; // Volume weighted average price
   uv: number; // total user value owned in this stock
+  us: number; // total shares owned by user
 }
 @Component({
   selector: 'app-market',
@@ -86,6 +87,7 @@ export class MarketComponent implements OnInit {
         v: this.tickers[0].v,
         vw: this.tickers[0].vw,
         uv: 0,
+        us: 0,
       };
       await this.updateSelectedTickerValue();
       this.filterTickers();
@@ -154,16 +156,20 @@ export class MarketComponent implements OnInit {
       }));
 
       let totalValue = 0;
+      let totalShares = 0;
       if (userStocksArray && userStocksArray.length > 0) {
         const stocks = userStocksArray.filter(
           ({ stock }) => stock.stockSymbol === this.selectedTicker?.T
         );
-        stocks.map(({ stock }) => (totalValue += stock.price * stock.shares));
+        stocks.map(({ stock }) => {
+          totalValue += stock.price * stock.shares;
+          totalShares += stock.shares;
+        });
       }
-      return Number(totalValue.toFixed(2));
+      return [Number(totalValue.toFixed(2)), totalShares];
     } catch (error) {
       console.error('Error fetching stocks:', error);
-      return 0;
+      return [0, 0];
     }
   }
 
@@ -227,8 +233,9 @@ export class MarketComponent implements OnInit {
 
   async updateSelectedTickerValue(): Promise<void> {
     if (this.selectedTicker) {
-      const totalValue = await this.getUserStock();
-      this.selectedTicker.uv = totalValue;
+      const totals = await this.getUserStock();
+      this.selectedTicker.uv = totals[0];
+      this.selectedTicker.us = totals[1];
     }
   }
 
@@ -260,9 +267,11 @@ export class MarketComponent implements OnInit {
       v: ticker.v,
       vw: ticker.vw,
       uv: 0,
+      us: 0,
     };
-    const totalValue = await this.getUserStock();
-    this.selectedTicker.uv = totalValue;
+    const totals = await this.getUserStock();
+    this.selectedTicker.uv = totals[0];
+    this.selectedTicker.us = totals[1];
     this.amount = 1;
   }
 
