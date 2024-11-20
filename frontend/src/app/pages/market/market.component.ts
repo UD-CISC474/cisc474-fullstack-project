@@ -42,7 +42,7 @@ export class MarketComponent implements OnInit {
   totalPages: number = 0;
   paginatedTickers: TickerResult[] = [];
 
-  userId: string = 'default-user'; // Placeholder for user ID
+  userId: string = 'default-user';
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
@@ -63,7 +63,7 @@ export class MarketComponent implements OnInit {
 
     onAuthStateChanged(auth, (user: User | null) => {
       if (user) {
-        this.userId = user.uid; // Set authenticated user ID
+        this.userId = user.uid;
         console.log(`Authenticated user: ${this.userId}`);
       } else {
         console.log('No user authenticated. Using default-user.');
@@ -75,7 +75,6 @@ export class MarketComponent implements OnInit {
     try {
       const tickerResponse = await this.marketService.getTickers(date);
       this.tickers = tickerResponse.results;
-      const totalValue = await this.getUserStock();
       this.selectedTicker = {
         T: this.tickers[0].T,
         c: this.tickers[0].c,
@@ -88,7 +87,7 @@ export class MarketComponent implements OnInit {
         vw: this.tickers[0].vw,
         uv: 0,
       };
-      this.selectedTicker.uv = totalValue;
+      await this.updateSelectedTickerValue();
       this.filterTickers();
     } catch (error) {
       console.error(`Failed to load tickers`, error);
@@ -126,7 +125,8 @@ export class MarketComponent implements OnInit {
     };
 
     this.marketService.purchaseStock(payload).subscribe({
-      next: (response) => {
+      next: async (response) => {
+        await this.updateSelectedTickerValue();
         this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker?.T}!`;
         console.log('Purchase Response:', response);
       },
@@ -160,8 +160,7 @@ export class MarketComponent implements OnInit {
         );
         stocks.map(({ stock }) => (totalValue += stock.price * stock.shares));
       }
-      console.log(totalValue);
-      return totalValue;
+      return Number(totalValue.toFixed(2));
     } catch (error) {
       console.error('Error fetching stocks:', error);
       return 0;
@@ -193,36 +192,43 @@ export class MarketComponent implements OnInit {
             `Selling ${amount} shares of ${stockToSell.stock.stockSymbol}`
           );
 
-          if (!this.selectedTicker || amount <= 0) {
-            this.purchaseMessage =
-              'Please select a stock and enter a valid amount.';
-            return;
-          }
-
           const payload = {
             userId: this.userId,
-            stockSymbol: this.selectedTicker.T,
+            stockSymbol: this.selectedTicker!.T,
             shares: stockToSell.stock.shares - amount,
-            price: this.selectedTicker.c,
+            price: this.selectedTicker!.c,
             stockId: stockToSell.id,
           };
 
           this.marketService.updateUserStocks(payload).subscribe({
-            next: (response) => {
+            next: async (response) => {
+              await this.updateSelectedTickerValue();
+              this.sellMessage = `Successfully sold ${amount} shares of ${this.selectedTicker?.T}!`;
               console.log('Update successful:', response);
             },
             error: (error) => {
+              this.sellMessage = 'Failed to sell stock. Try again.';
               console.error('Error updating stock:', error);
             },
           });
         } else {
           console.log('Selected stock not found in user holdings');
+          this.sellMessage = 'Selected stock not found in user holdings.';
         }
       } else {
         console.log('No stocks found in user holdings');
+        this.sellMessage = 'No stocks found in user holdings.';
       }
     } catch (error) {
       console.error('Error fetching stocks:', error);
+      this.sellMessage = 'Error fetching stocks. Please try again.';
+    }
+  }
+
+  async updateSelectedTickerValue(): Promise<void> {
+    if (this.selectedTicker) {
+      const totalValue = await this.getUserStock();
+      this.selectedTicker.uv = totalValue;
     }
   }
 
