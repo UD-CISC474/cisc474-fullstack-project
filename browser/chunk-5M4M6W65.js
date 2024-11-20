@@ -1,0 +1,1 @@
+import{Bb as o,Cb as s,Rb as r,Zb as a,na as n}from"./chunk-GYFONJW2.js";var p=class t{static \u0275fac=function(e){return new(e||t)};static \u0275cmp=n({type:t,selectors:[["app-user"]],standalone:!0,features:[a],decls:2,vars:0,template:function(e,m){e&1&&(o(0,"p"),r(1,"user works!"),s())}})};export{p as UserComponent};

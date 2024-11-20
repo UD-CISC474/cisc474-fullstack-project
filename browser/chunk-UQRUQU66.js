@@ -1,0 +1,1 @@
+import{Bb as n,Cb as i,Rb as p,Zb as r,na as t}from"./chunk-GYFONJW2.js";var a=class e{static \u0275fac=function(o){return new(o||e)};static \u0275cmp=t({type:e,selectors:[["app-portfolio"]],standalone:!0,features:[r],decls:2,vars:0,template:function(o,s){o&1&&(n(0,"p"),p(1,"portfolio works!"),i())}})};export{a as PortfolioComponent};
