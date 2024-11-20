@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
 import { getAuth, onAuthStateChanged, user, User } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
 
 interface Stock {
   stockSymbol: string;
@@ -18,7 +19,7 @@ interface Stock {
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
   standalone: true,
-  imports: [NgFor, FormsModule, NgIf],
+  imports: [NgFor, FormsModule, NgIf, MatIcon],
 })
 export class MarketComponent implements OnInit {
   tickers: TickerResult[] = [];
