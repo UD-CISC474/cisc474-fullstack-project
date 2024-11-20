@@ -3,7 +3,7 @@ import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { MarketComponent } from './pages/market/market.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: '/profile', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   {
     path: 'profile',
@@ -19,9 +19,14 @@ export const routes: Routes = [
         (m) => m.PortfolioComponent
       ),
   },
-  { path: 'market',
+  {
+    path: 'market',
     loadComponent: () =>
-      import('./pages/market/market.component').then(
-        (m) => m.MarketComponent
-      ), },
+      import('./pages/market/market.component').then((m) => m.MarketComponent),
+  },
+  {
+    path: 'user',
+    loadComponent: () =>
+      import('./pages/user/user.component').then((m) => m.UserComponent),
+  },
 ];

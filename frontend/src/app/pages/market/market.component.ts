@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
 import { getAuth, onAuthStateChanged, user, User } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
 
 interface Stock {
   stockSymbol: string;
@@ -29,7 +30,7 @@ interface SelectedTicker {
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
   standalone: true,
-  imports: [NgFor, FormsModule, NgIf],
+  imports: [NgFor, FormsModule, NgIf, MatIcon],
 })
 export class MarketComponent implements OnInit {
   tickers: TickerResult[] = [];
@@ -45,10 +46,10 @@ export class MarketComponent implements OnInit {
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
-
   constructor(private marketService: MarketService) {}
 
   ngOnInit(): void {
+    console.log(this.userId);
     let yesterday: string;
     if (dayjs().day().toString() === 'Monday') {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');

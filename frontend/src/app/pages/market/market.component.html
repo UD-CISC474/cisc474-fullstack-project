@@ -36,19 +36,21 @@
     <!-- Pagination Controls -->
     <div class="pagination-controls">
       <button
+        mat-icon-button
         (click)="goToPage(currentPage - 1)"
         [disabled]="currentPage === 1"
         aria-label="Go to previous page"
       >
-        Previous
+        <mat-icon>chevron_left</mat-icon>
       </button>
       <span aria-live="polite">Page {{ currentPage }} of {{ totalPages }}</span>
       <button
+        mat-icon-button
         (click)="goToPage(currentPage + 1)"
         [disabled]="currentPage === totalPages"
         aria-label="Go to next page"
       >
-        Next
+        <mat-icon>chevron_right</mat-icon>
       </button>
     </div>
   </div>
@@ -74,23 +76,40 @@
         <!-- Stock Purchase Section -->
         <div class="purchase-controls">
           <label for="stock-amount">Amount:</label>
-          <input
-            id="stock-amount"
-            type="number"
-            [(ngModel)]="amount"
-            min="1"
-            aria-label="Enter the number of shares"
-          />
-          <button
-            (click)="buyStock(amount)"
-            [disabled]="!selectedTicker || amount <= 0"
-            aria-label="Buy selected stock"
-          >
-            Buy
-          </button>
-          <button (click)="sellStock(amount)" aria-label="Sell selected stock">
-            Sell
-          </button>
+          <div class="amount-buttons">
+            <button
+              mat-icon-button
+              (click)="decreaseAmount()"
+              [disabled]="amount === 1"
+            >
+              <mat-icon>remove</mat-icon>
+            </button>
+            <input
+              id="stock-amount"
+              type="number"
+              [(ngModel)]="amount"
+              min="1"
+              aria-label="Enter the number of shares"
+            />
+            <button mat-icon-button (click)="increaseAmount()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+          <div>
+            <button
+              (click)="buyStock(amount)"
+              [disabled]="!selectedTicker || amount <= 0"
+              aria-label="Buy selected stock"
+            >
+              Buy
+            </button>
+            <button
+              (click)="sellStock(amount)"
+              aria-label="Sell selected stock"
+            >
+              Sell
+            </button>
+          </div>
         </div>
       </div>
 
