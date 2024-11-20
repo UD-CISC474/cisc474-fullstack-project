@@ -3,6 +3,11 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { getAuth, provideAuth } from '@angular/fire/auth';
+import { getDatabase, provideDatabase } from '@angular/fire/database';
+import { provideFirebaseApp } from '@angular/fire/app';
+import { initializeApp } from 'firebase/app';
+import { environment } from '../../../backend/src/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -10,5 +15,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(),
+    provideFirebaseApp(() => initializeApp(environment.FIREBASE_CONFIG)),
+    provideAuth(() => getAuth()),
+    provideDatabase(() => getDatabase()),
   ],
 };
