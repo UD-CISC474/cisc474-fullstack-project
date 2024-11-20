@@ -120,7 +120,7 @@ const queryTickers = async (date: string): Promise<TickerResponse> => {
   );
 
   const res = await response.json();
-
+  console.log(res);
   return {
     adjusted: res.adjusted,
     queryCount: res.queryCount,
@@ -140,5 +140,10 @@ const queryTickers = async (date: string): Promise<TickerResponse> => {
   };
 };
 
-export { queryCompanyData, queryCompanyDataNoCache, queryPortfolio, queryTickers };
+export {
+  queryCompanyData,
+  queryCompanyDataNoCache,
+  queryPortfolio,
+  queryTickers,
+};
 export type { TickerResult, TickerResponse };

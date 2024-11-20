@@ -4,7 +4,14 @@ import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { getAuth, onAuthStateChanged, User } from '@angular/fire/auth';
+import { getAuth, onAuthStateChanged, user, User } from '@angular/fire/auth';
+import { Observable } from 'rxjs';
+
+interface Stock {
+  stockSymbol: string;
+  shares: number;
+  price: number;
+}
 
 @Component({
   selector: 'app-market',
@@ -26,15 +33,16 @@ export class MarketComponent implements OnInit {
   userId: string = 'default-user'; // Placeholder for user ID
   amount: number = 1;
   purchaseMessage: string = '';
+  sellMessage: string = '';
 
   constructor(private marketService: MarketService) {}
 
   ngOnInit(): void {
     let yesterday: string;
     if (dayjs().day().toString() === 'Monday') {
-      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
-    } else {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
+    } else {
+      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
 
     this.loadTickers(yesterday);
@@ -103,6 +111,69 @@ export class MarketComponent implements OnInit {
         console.error('Purchase Error:', error);
       },
     });
+  }
+
+  getStocks(): Promise<any> {
+    return this.marketService.getUserStocks(this.userId).toPromise();
+  }
+
+  async sellStock(amount: number): Promise<void> {
+    try {
+      const response = await this.getStocks();
+      const userStocks: { [key: string]: Stock } = response.stocks;
+
+      // Convert userStocks to an array of [key, stock] pairs
+      const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
+        userStocks
+      ).map(([id, stock]) => ({
+        id,
+        stock,
+      }));
+
+      if (userStocksArray && userStocksArray.length > 0) {
+        const stockToSell = userStocksArray.find(
+          ({ stock }) =>
+            stock.stockSymbol === this.selectedTicker?.T &&
+            stock.price === this.selectedTicker?.c &&
+            amount <= stock.shares
+        );
+
+        if (stockToSell) {
+          console.log(
+            `Selling ${amount} shares of ${stockToSell.stock.stockSymbol}`
+          );
+
+          if (!this.selectedTicker || amount <= 0) {
+            this.purchaseMessage =
+              'Please select a stock and enter a valid amount.';
+            return;
+          }
+
+          const payload = {
+            userId: this.userId,
+            stockSymbol: this.selectedTicker.T,
+            shares: stockToSell.stock.shares - amount,
+            price: this.selectedTicker.c,
+            stockId: stockToSell.id,
+          };
+
+          this.marketService.updateUserStocks(payload).subscribe({
+            next: (response) => {
+              console.log('Update successful:', response);
+            },
+            error: (error) => {
+              console.error('Error updating stock:', error);
+            },
+          });
+        } else {
+          console.log('Selected stock not found in user holdings');
+        }
+      } else {
+        console.log('No stocks found in user holdings');
+      }
+    } catch (error) {
+      console.error('Error fetching stocks:', error);
+    }
   }
 
   updatePagination(): void {

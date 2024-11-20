@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import {
   queryTickers,
@@ -25,5 +25,23 @@ export class MarketService {
   }): Observable<any> {
     const apiUrl = 'http://localhost:3000/api/user/stock';
     return this.http.post(apiUrl, payload);
+  }
+
+  getUserStocks(userId: string): Observable<any> {
+    const apiUrl = 'http://localhost:3000/api/user/stock';
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get(apiUrl, { params });
+  }
+
+  updateUserStocks(payload: {
+    userId: string;
+    stockSymbol: string;
+    shares: number;
+    price: number;
+    stockId: string;
+  }): Observable<any> {
+    console.log('Payload being sent to backend:', payload);
+    const apiUrl = 'http://localhost:3000/api/user/stock';
+    return this.http.put(apiUrl, payload);
   }
 }
