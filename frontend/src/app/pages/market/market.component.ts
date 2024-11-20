@@ -26,15 +26,16 @@ export class MarketComponent implements OnInit {
   userId: string = 'default-user'; // Placeholder for user ID
   amount: number = 1;
   purchaseMessage: string = '';
+  sellMessage: string = '';
 
   constructor(private marketService: MarketService) {}
 
   ngOnInit(): void {
     let yesterday: string;
     if (dayjs().day().toString() === 'Monday') {
-      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
-    } else {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
+    } else {
+      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
 
     this.loadTickers(yesterday);
@@ -101,6 +102,25 @@ export class MarketComponent implements OnInit {
       error: (error) => {
         this.purchaseMessage = 'Failed to purchase stock. Try again.';
         console.error('Purchase Error:', error);
+      },
+    });
+  }
+
+  sellStock(amount: number): void {
+    console.log(this.userId);
+    if (!this.selectedTicker || amount <= 0) {
+      this.purchaseMessage = 'Please select a stock and enter a valid amount.';
+      return;
+    }
+
+    this.marketService.getUserStocks(this.userId).subscribe({
+      next: (response) => {
+        this.sellMessage = `Successfully fetched user stocks!`;
+        console.log('Fetch Response:', response);
+      },
+      error: (error) => {
+        this.sellMessage = 'Failed to fetch user stocks. Try again.';
+        console.error('Fetch Error:', error);
       },
     });
   }

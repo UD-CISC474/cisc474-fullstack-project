@@ -84,6 +84,13 @@
           >
             Buy
           </button>
+          <button
+            (click)="sellStock(amount)"
+            [disabled]="!selectedTicker || amount <= 0"
+            aria-label="Sell selected stock"
+          >
+            Sell
+          </button>
         </div>
         <div class="amount-buttons">
           <button (click)="increaseAmount()">Increase</button>
