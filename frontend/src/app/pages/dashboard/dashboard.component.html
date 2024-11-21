@@ -1,12 +1,32 @@
 <div class="container">
   <mat-grid-list cols="4" rowHeight="250px" gutterSize="10px">
-    @for (tile of tiles; track tile) {
+    <mat-grid-tile [colspan]="4" [rowspan]="1" style="background: lightblue">
+      NASDAQ, DOW, S&P:
+    </mat-grid-tile>
+
+    <mat-grid-tile [colspan]="4" [rowspan]="1" style="background: #ddbdf1">
+      Portfolio Value: ${{ portfolioValue }} USD
+      <br />
+      Insert percent change:
+      <br />
+      Insert change in dollars:
+    </mat-grid-tile>
+
+    <mat-grid-tile [colspan]="2" [rowspan]="1" style="background: lightgreen">
+      Highest Earner:
+    </mat-grid-tile>
+
+    <mat-grid-tile [colspan]="2" [rowspan]="1" style="background: lightpink">
+      Biggest Loser:
+    </mat-grid-tile>
+
     <mat-grid-tile
-      [colspan]="tile.cols"
-      [rowspan]="tile.rows"
-      [style.background]="tile.color"
-      >{{ tile.text }}</mat-grid-tile
+      *ngFor="let news of recentNews"
+      [colspan]="1"
+      [rowspan]="1"
+      style="background: #ddbdf1"
     >
-    }
+      {{ news }}
+    </mat-grid-tile>
   </mat-grid-list>
 </div>

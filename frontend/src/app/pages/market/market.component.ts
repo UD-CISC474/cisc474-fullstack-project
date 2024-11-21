@@ -4,28 +4,12 @@ import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { getAuth, onAuthStateChanged, user, User } from '@angular/fire/auth';
-import { Observable } from 'rxjs';
+import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { MatIcon } from '@angular/material/icon';
+import { SelectedTicker, Stock } from '../../interfaces';
+import { lastValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 
-interface Stock {
-  stockSymbol: string;
-  shares: number;
-  price: number;
-}
-interface SelectedTicker {
-  T: string; // Ticker symbol
-  c: number; // Close price
-  h: number; // High price
-  l: number; // Low price
-  n: number; // Number of trades
-  o: number; // Open price
-  t: number; // Timestamp
-  v: number; // Volume
-  vw: number; // Volume weighted average price
-  uv: number; // total user value owned in this stock
-  us: number; // total shares owned by user
-}
 @Component({
   selector: 'app-market',
   templateUrl: './market.component.html',
@@ -47,7 +31,22 @@ export class MarketComponent implements OnInit {
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
-  constructor(private marketService: MarketService) {}
+
+  constructor(
+    public auth: Auth,
+    private marketService: MarketService,
+    private router: Router
+  ) {
+    onAuthStateChanged(auth, (user: User | null) => {
+      if (user) {
+        this.userId = user.uid;
+        console.log(`Authenticated user: ${this.userId}`);
+      } else {
+        this.router.navigate(['/profile']);
+        console.log('No user authenticated. Using default-user.');
+      }
+    });
+  }
 
   ngOnInit(): void {
     console.log(this.userId);
@@ -59,17 +58,6 @@ export class MarketComponent implements OnInit {
     }
 
     this.loadTickers(yesterday);
-
-    const auth = getAuth();
-
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-      } else {
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
   }
 
   async loadTickers(date: string): Promise<void> {
@@ -140,7 +128,7 @@ export class MarketComponent implements OnInit {
   }
 
   getStocks(): Promise<any> {
-    return this.marketService.getUserStocks(this.userId).toPromise();
+    return lastValueFrom(this.marketService.getUserStocks(this.userId));
   }
 
   async getUserStock() {
