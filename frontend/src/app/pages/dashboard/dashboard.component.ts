@@ -1,27 +1,93 @@
 import { Component } from '@angular/core';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MarketService } from '../market/market.service';
+import { DashboardService } from './dashboard.service';
+import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
+import dayjs from 'dayjs';
+import { Stock } from '../../interfaces';
+import { lastValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [MatGridListModule],
+  imports: [MatGridListModule, CommonModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrl: './dashboard.component.scss',
 })
-
 export class DashboardComponent {
-tiles: Tile[] = [
-    {text: 'Temp', cols: 3, rows: 1, color: 'lightblue'},
-    {text: 'Temp', cols: 1, rows: 2, color: 'lightgreen'},
-    {text: 'Temp', cols: 1, rows: 2, color: 'lightgreen'},
-    {text: 'Temp', cols: 1, rows: 2, color: 'lightpink'},
-    {text: 'Temp', cols: 2, rows: 2, color: '#DDBDF1'},
-    {text: 'Temp', cols: 1, rows: 2, color: '#DDBDF1'},
-  ];
-}
-export interface Tile {
-  color: string;
-  cols: number;
-  rows: number;
-  text: string;
+  userId: string = 'default-user';
+  nasdaqValue: number = 0;
+  spValue: number = 0;
+  dowValue: number = 0;
+  portfolioValue: number = 0;
+  recentNews: string[] = ['NEWS', 'NEWS', 'NEWS', 'NEWS'];
+
+  constructor(
+    private auth: Auth,
+    private marketService: MarketService,
+    private router: Router,
+    private dashboardService: DashboardService
+  ) {
+    onAuthStateChanged(auth, (user: User | null) => {
+      if (user) {
+        this.userId = user.uid;
+        console.log(`Authenticated user: ${this.userId}`);
+        this.getPortfolioValue();
+      } else {
+        this.router.navigate(['/profile']);
+        console.log('No user authenticated. Using default-user.');
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    let yesterday: string;
+    if (dayjs().day().toString() === 'Monday') {
+      yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
+    } else {
+      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+    }
+
+    this.getIndicesValue(yesterday);
+  }
+
+  async getIndicesValue(date: string): Promise<void> {
+    const apiResponse = await lastValueFrom(
+      this.dashboardService.getIndices(date)
+    );
+
+    if (apiResponse.success && apiResponse.response) {
+      const { response } = apiResponse.response;
+      this.nasdaqValue = Number(response.nasdaq?.close);
+      //this.dowValue = Number((response.dow?.close).toFixed(2));
+      //this.spValue = Number((response.sp?.close).toFixed(2));
+      console.log(response);
+    } else {
+      console.error('Failed to fetch indices data:', apiResponse.message);
+    }
+  }
+
+  async getPortfolioValue(): Promise<void> {
+    const response = await lastValueFrom(
+      this.marketService.getUserStocks(this.userId)
+    );
+
+    const userStocks: { [key: string]: Stock } = response.stocks;
+    const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
+      userStocks
+    ).map(([id, stock]) => ({
+      id,
+      stock,
+    }));
+
+    let totalValue = 0;
+    if (userStocksArray && userStocksArray.length > 0) {
+      userStocksArray.map(({ stock }) => {
+        totalValue += stock.price * stock.shares;
+      });
+    }
+    this.portfolioValue = Number(totalValue.toFixed(2));
+  }
 }
