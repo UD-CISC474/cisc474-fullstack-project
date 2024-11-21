@@ -59,8 +59,8 @@ export class DashboardComponent {
     );
 
     if (apiResponse.success && apiResponse.response) {
-      const { response } = apiResponse;
-      this.nasdaqValue = Number((response.nasdaq?.close).toFixed(2));
+      const { response } = apiResponse.response;
+      this.nasdaqValue = Number(response.nasdaq?.close);
       //this.dowValue = Number((response.dow?.close).toFixed(2));
       //this.spValue = Number((response.sp?.close).toFixed(2));
       console.log(response);

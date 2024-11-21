@@ -290,12 +290,48 @@ export class Controller {
       }
       res.send({
         success: true,
-        message: "Stock updated successfully!",
+        message: "Index fetched successfully!",
         response,
       });
     } catch (error) {
       const err = error as Error;
       console.error("Error fetching index data: ", err.message);
+      res.status(500).send({
+        success: false,
+        message: "Internal server error",
+        error: err.message,
+      });
+    }
+  }
+
+  public async queryAllTickers(req: express.Request, res: express.Response) {
+    try {
+      const { date } = req.query;
+
+      if (!date) {
+        res.status(400).send({
+          success: false,
+          message: "Missing required field: date",
+        });
+        return;
+      }
+
+      const response = await queryTickers(date.toString());
+
+      if (!response) {
+        res.status(400).send({
+          success: false,
+          message: "No response from given date.",
+        });
+      }
+      res.send({
+        success: true,
+        message: "Stocks fetched successfully!",
+        response,
+      });
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error fetching stock data: ", err.message);
       res.status(500).send({
         success: false,
         message: "Internal server error",

@@ -1,12 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-
-import {
-  queryTickers,
-  TickerResponse,
-} from '../../../../../backend/src/polygon';
 import { Observable } from 'rxjs';
-import { user } from '@angular/fire/auth';
 
 @Injectable({
   providedIn: 'root',
@@ -14,8 +8,10 @@ import { user } from '@angular/fire/auth';
 export class MarketService {
   constructor(private http: HttpClient) {}
 
-  getTickers(date: string): Promise<TickerResponse> {
-    return queryTickers(date);
+  getTickers(date: string): Observable<any> {
+    const params = new HttpParams().set('date', date);
+    const apiUrl = 'http://localhost:3000/api/polygon/all';
+    return this.http.get(apiUrl, { params });
   }
 
   purchaseStock(payload: {

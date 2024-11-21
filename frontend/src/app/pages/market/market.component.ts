@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { MatIcon } from '@angular/material/icon';
 import { SelectedTicker, Stock } from '../../interfaces';
-import { lastValueFrom } from 'rxjs';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Component({
@@ -62,25 +62,42 @@ export class MarketComponent implements OnInit {
 
   async loadTickers(date: string): Promise<void> {
     try {
-      const tickerResponse = await this.marketService.getTickers(date);
-      this.tickers = tickerResponse.results;
-      this.selectedTicker = {
-        T: this.tickers[0].T,
-        c: this.tickers[0].c,
-        h: this.tickers[0].h,
-        l: this.tickers[0].l,
-        n: this.tickers[0].n,
-        o: this.tickers[0].o,
-        t: this.tickers[0].t,
-        v: this.tickers[0].v,
-        vw: this.tickers[0].vw,
-        uv: 0,
-        us: 0,
-      };
-      await this.updateSelectedTickerValue();
-      this.filterTickers();
+      const tickerResponse = await firstValueFrom(
+        this.marketService.getTickers(date)
+      );
+
+      // Log the response for debugging
+      console.log('Full ticker response:', tickerResponse);
+
+      // Access tickers inside the `response` object
+      const tickers = tickerResponse?.response?.results;
+
+      // Check if `tickers` exists and is an array
+      if (tickers && Array.isArray(tickers) && tickers.length > 0) {
+        this.tickers = tickers;
+
+        this.selectedTicker = {
+          T: this.tickers[0].T,
+          c: this.tickers[0].c,
+          h: this.tickers[0].h,
+          l: this.tickers[0].l,
+          n: this.tickers[0].n,
+          o: this.tickers[0].o,
+          t: this.tickers[0].t,
+          v: this.tickers[0].v,
+          vw: this.tickers[0].vw,
+          uv: 0,
+          us: 0,
+        };
+
+        await this.updateSelectedTickerValue();
+        this.filterTickers();
+      } else {
+        console.warn('No tickers found in the response:', tickerResponse);
+        this.tickers = [];
+      }
     } catch (error) {
-      console.error(`Failed to load tickers`, error);
+      console.error('Failed to load tickers', error);
       this.tickers = [];
       this.filteredTickers = [];
     }
