@@ -6,19 +6,31 @@ import { MatGridListModule } from '@angular/material/grid-list';
   standalone: true,
   imports: [MatGridListModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrl: './dashboard.component.scss',
 })
-
 export class DashboardComponent {
-tiles: Tile[] = [
-    {text: 'Temp', cols: 3, rows: 1, color: 'lightblue'},
-    {text: 'Temp', cols: 1, rows: 2, color: 'lightgreen'},
-    {text: 'Temp', cols: 1, rows: 2, color: 'lightgreen'},
-    {text: 'Temp', cols: 1, rows: 2, color: 'lightpink'},
-    {text: 'Temp', cols: 2, rows: 2, color: '#DDBDF1'},
-    {text: 'Temp', cols: 1, rows: 2, color: '#DDBDF1'},
+  tiles: Tile[] = [
+    {
+      text: 'NASDAQ, DOW, S&P:',
+      cols: 4,
+      rows: 1,
+      color: 'lightblue',
+    },
+    {
+      text: 'Portfolio Portfolio Value % and $ Change:',
+      cols: 4,
+      rows: 1,
+      color: '#DDBDF1',
+    },
+    { text: 'Highest Earner:', cols: 2, rows: 1, color: 'lightgreen' },
+    { text: 'Biggest Loser:', cols: 2, rows: 1, color: 'lightpink' },
+    { text: 'Recent News 1:', cols: 1, rows: 1, color: '#DDBDF1' },
+    { text: 'Recent News 2:', cols: 1, rows: 1, color: '#DDBDF1' },
+    { text: 'Recent News 3:', cols: 1, rows: 1, color: '#DDBDF1' },
+    { text: 'Recent News 4:', cols: 1, rows: 1, color: '#DDBDF1' },
   ];
 }
+
 export interface Tile {
   color: string;
   cols: number;
