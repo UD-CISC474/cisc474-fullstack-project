@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MarketService } from '../market/market.service';
+import { DashboardService } from './dashboard.service';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import dayjs from 'dayjs';
 import { Stock } from '../../interfaces';
 import { lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
-import { NgFor } from '@angular/common';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -18,13 +18,17 @@ import { CommonModule } from '@angular/common';
 })
 export class DashboardComponent {
   userId: string = 'default-user';
+  nasdaqValue: number = 0;
+  spValue: number = 0;
+  dowValue: number = 0;
   portfolioValue: number = 0;
   recentNews: string[] = ['NEWS', 'NEWS', 'NEWS', 'NEWS'];
 
   constructor(
     private auth: Auth,
     private marketService: MarketService,
-    private router: Router
+    private router: Router,
+    private dashboardService: DashboardService
   ) {
     onAuthStateChanged(auth, (user: User | null) => {
       if (user) {
@@ -44,6 +48,24 @@ export class DashboardComponent {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
     } else {
       yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+    }
+
+    this.getIndicesValue(yesterday);
+  }
+
+  async getIndicesValue(date: string): Promise<void> {
+    const apiResponse = await lastValueFrom(
+      this.dashboardService.getIndices(date)
+    );
+
+    if (apiResponse.success && apiResponse.response) {
+      const { response } = apiResponse;
+      this.nasdaqValue = Number((response.nasdaq?.close).toFixed(2));
+      //this.dowValue = Number((response.dow?.close).toFixed(2));
+      //this.spValue = Number((response.sp?.close).toFixed(2));
+      console.log(response);
+    } else {
+      console.error('Failed to fetch indices data:', apiResponse.message);
     }
   }
 

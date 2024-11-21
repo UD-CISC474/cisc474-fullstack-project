@@ -49,6 +49,20 @@ interface TickerResponse {
   status: string;
 }
 
+interface IndexData {
+  symbol: string;
+  date: string;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
+  volume: number;
+}
+
+interface IndicesResponse {
+  nasdaq: IndexData;
+}
+
 const POLYGON_API_KEY = environment.POLYGON_API_KEY || "";
 
 const queryCompanyDataNoCache = async ({
@@ -120,7 +134,7 @@ const queryTickers = async (date: string): Promise<TickerResponse> => {
   );
 
   const res = await response.json();
-  console.log(res);
+
   return {
     adjusted: res.adjusted,
     queryCount: res.queryCount,
@@ -140,10 +154,33 @@ const queryTickers = async (date: string): Promise<TickerResponse> => {
   };
 };
 
+const queryIndices = async (date: string): Promise<IndicesResponse> => {
+  const nasdaq_response = await fetch(
+    `https://api.polygon.io/v1/open-close/I:COMP/${date}?apiKey=${POLYGON_API_KEY}`
+  );
+
+  const nasdaq_res = await nasdaq_response.json();
+
+  const formatResponse = (data: any): IndexData => ({
+    symbol: data.symbol,
+    date: data.from,
+    open: data.open,
+    close: data.close,
+    high: data.high,
+    low: data.low,
+    volume: data.volume,
+  });
+
+  return {
+    nasdaq: formatResponse(nasdaq_res),
+  };
+};
+
 export {
   queryCompanyData,
   queryCompanyDataNoCache,
   queryPortfolio,
   queryTickers,
+  queryIndices,
 };
 export type { TickerResult, TickerResponse };
