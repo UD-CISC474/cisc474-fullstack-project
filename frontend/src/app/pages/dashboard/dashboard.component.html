@@ -1,10 +1,17 @@
-<div class="container">
-  <mat-grid-list cols="4" rowHeight="250px" gutterSize="10px">
-    <mat-grid-tile [colspan]="4" [rowspan]="1" style="background: lightblue">
+<div class="dashboard-container">
+  <mat-grid-list
+    cols="4"
+    rowHeight="250px"
+    gutterSize="10px"
+    class="dashboard-grid"
+  >
+    <!-- NASDAQ Composite -->
+    <mat-grid-tile [colspan]="4" [rowspan]="1" class="nasdaq-tile">
       NASDAQ Composite: ${{ nasdaqValue }} USD
     </mat-grid-tile>
 
-    <mat-grid-tile [colspan]="4" [rowspan]="1" style="background: #ddbdf1">
+    <!-- Portfolio Value -->
+    <mat-grid-tile [colspan]="4" [rowspan]="1" class="portfolio-value-tile">
       Portfolio Value: ${{ portfolioValue }} USD
       <br />
       Insert percent change:
@@ -12,19 +19,22 @@
       Insert change in dollars:
     </mat-grid-tile>
 
-    <mat-grid-tile [colspan]="2" [rowspan]="1" style="background: lightgreen">
+    <!-- Highest Earner -->
+    <mat-grid-tile [colspan]="2" [rowspan]="1" class="highest-earner-tile">
       Highest Earner:
     </mat-grid-tile>
 
-    <mat-grid-tile [colspan]="2" [rowspan]="1" style="background: lightpink">
+    <!-- Biggest Loser -->
+    <mat-grid-tile [colspan]="2" [rowspan]="1" class="biggest-loser-tile">
       Biggest Loser:
     </mat-grid-tile>
 
+    <!-- Recent News -->
     <mat-grid-tile
       *ngFor="let news of recentNews"
       [colspan]="1"
       [rowspan]="1"
-      style="background: #ddbdf1"
+      class="news-tile"
     >
       {{ news }}
     </mat-grid-tile>
