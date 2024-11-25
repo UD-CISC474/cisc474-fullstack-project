@@ -33,7 +33,7 @@ class Application {
       next: any
     ) {
       res.header("Access-Control-Allow-Origin", "http://localhost:4200");
-      //res.header("Access-Control-Allow-Origin", "*");
+      res.header("Access-Control-Allow-Origin", "*");
       res.header(
         "Access-Control-Allow-Methods",
         "PUT, GET, POST, DELETE, OPTIONS"

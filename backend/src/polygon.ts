@@ -70,6 +70,17 @@ const queryCompanyDataNoCache = async ({
   )
     .then((res) => res.json())
     .then((res) => {
+      if (!res.results) {
+        console.warn('No results found for the given date range or API limits reached');
+        return {
+          ticker,
+          count: 0,
+          start: new Date(from),
+          end: new Date(to),
+          prices: [],
+        };
+      }
+  
       return {
         ticker,
         count: res.resultsCount,
@@ -95,10 +106,15 @@ const queryCompanyDataNoCache = async ({
           }
         ),
       };
+    })
+    .catch((err) => {
+      console.error('Error fetching data from Polygon:', err);
+      throw err; // Re-throw to handle in the caller
     });
-
+  
   return data;
-};
+    
+  };
 
 const queryCompanyData = async ({
   ticker,
@@ -146,4 +162,4 @@ export {
   queryPortfolio,
   queryTickers,
 };
-export type { TickerResult, TickerResponse };
+export type { TickerResult, TickerResponse, CompanyResponse };

@@ -17,6 +17,7 @@ export class ApiRouter {
     this.router.post("/user/stock", this.controller.postUserStock);
     this.router.get("/user/stock", this.controller.getUserStock);
     this.router.put("/user/stock", this.controller.updateUserStock);
+    this.router.get("/company-data", this.controller.getCompanyData);
     return this.router;
   }
 }

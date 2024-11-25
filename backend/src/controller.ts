@@ -260,4 +260,32 @@ export class Controller {
       });
     }
   }
+
+  public async getCompanyData(req: express.Request, res: express.Response): Promise<void> {
+    try {
+      const { ticker, from, to, interval } = req.query;
+  
+      if (!ticker || !from || !to || !interval) {
+        res.status(400).send({
+          success: false,
+          message: 'Missing required query parameters: ticker, from, to, interval',
+        });
+        return;
+      }
+  
+      const result = await queryCompanyDataNoCache({
+        ticker: ticker as string,
+        from: from as string,
+        to: to as string,
+        interval: interval as any,
+      });
+  
+      res.send({ success: true, data: result });
+    } catch (error) {
+      const err = error as Error;
+      console.error('Error fetching company data:', err);
+      res.status(500).send({ success: false, error: err.message });
+    }
+  }
+  
 }

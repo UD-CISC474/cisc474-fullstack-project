@@ -1,11 +1,14 @@
+// market.component.ts
 import { Component, OnInit } from '@angular/core';
 import { MarketService } from './market.service';
-import { TickerResult } from '../../../../../backend/src/polygon';
+import { TickerResult, CompanyResponse } from '../../../../../backend/src/polygon';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { getAuth, onAuthStateChanged, user, User } from '@angular/fire/auth';
-import { Observable } from 'rxjs';
+import { getAuth, onAuthStateChanged, User } from '@angular/fire/auth';
+import { Chart, registerables } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+
 
 interface Stock {
   stockSymbol: string;
@@ -29,13 +32,16 @@ export class MarketComponent implements OnInit {
   itemsPerPage: number = 50;
   totalPages: number = 0;
   paginatedTickers: TickerResult[] = [];
+  chart: Chart | null = null;
 
   userId: string = 'default-user'; // Placeholder for user ID
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
 
-  constructor(private marketService: MarketService) {}
+  constructor(private marketService: MarketService) {
+    Chart.register(...registerables);
+  }
 
   ngOnInit(): void {
     let yesterday: string;
@@ -63,13 +69,139 @@ export class MarketComponent implements OnInit {
   async loadTickers(date: string): Promise<void> {
     try {
       const tickerResponse = await this.marketService.getTickers(date);
+      console.log("Ticker response received:", tickerResponse);  // Debug log
       this.tickers = tickerResponse.results;
       this.selectedTicker = this.tickers[0];
       this.filterTickers();
+      this.loadGraphData('1D');
     } catch (error) {
       console.error(`Failed to load tickers`, error);
       this.tickers = [];
       this.filteredTickers = [];
+    }
+  }
+  
+  async loadGraphData(period: string): Promise<void> {
+    if (!this.selectedTicker) return;
+
+    try {
+      const fromDate = this.calculateFromDate(period);
+      const toDate = new Date().toISOString().substring(0, 10);
+
+      this.marketService.getCompanyData(this.selectedTicker.T, fromDate, toDate, 'half-hour')
+        .subscribe(data => {
+          this.renderChart(data.data);
+        }, error => {
+          console.error('Failed to load graph data:', error);
+        });
+    } catch (error) {
+      console.error('Failed to load graph data:', error);
+    }
+  }
+
+  calculateFromDate(period: string): string {
+    const today = new Date();
+    switch (period) {
+      case '1D':
+        return new Date(today.setDate(today.getDate() - 1)).toISOString().split('T')[0];
+      case '5D':
+        return new Date(today.setDate(today.getDate() - 5)).toISOString().split('T')[0];
+      case '1M':
+        return new Date(today.setMonth(today.getMonth() - 1)).toISOString().split('T')[0];
+      case '6M':
+        return new Date(today.setMonth(today.getMonth() - 6)).toISOString().split('T')[0];
+      case '1Y':
+        return new Date(today.setFullYear(today.getFullYear() - 1)).toISOString().split('T')[0];
+      case '2Y':
+        return new Date(today.setFullYear(today.getFullYear() - 2)).toISOString().split('T')[0];
+      default:
+        return today.toISOString().split('T')[0];
+    }
+  }
+
+  renderChart(data: CompanyResponse) {
+    // Destroy existing chart if it exists
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null; // Set it to null after destroying
+    }
+  
+    const labels = data.prices.map((point) => new Date(point.openTimestamp).toLocaleString());
+    const prices = data.prices.map((point) => point.close);
+  
+    const ctx = (document.getElementById('stockChart') as HTMLCanvasElement).getContext('2d');
+    if (ctx) {
+      this.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: `Price of ${this.selectedTicker?.T} over Time`,
+              data: prices,
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 2,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: this.getTimeUnit(data),
+              },
+            },
+            y: {
+              beginAtZero: false,
+            },
+          },
+        },
+      });
+    }
+  }
+  
+  getTimeUnit(data: CompanyResponse) {
+    const timeRange = new Date(data.end).getTime() - new Date(data.start).getTime();
+    if (timeRange <= 24 * 60 * 60 * 1000) {
+      return 'hour';
+    } else if (timeRange <= 7 * 24 * 60 * 60 * 1000) {
+      return 'day';
+    } else {
+      return 'month';
+    }
+  }
+
+  selectTicker(ticker: TickerResult): void {
+    this.selectedTicker = ticker;
+    this.amount = 1;
+    this.loadGraphData('1D'); // Default to '1 Day' when selecting a stock
+  }
+
+  filterTickers(): void {
+    const query = this.searchQuery.toLowerCase().trim();
+    this.filteredTickers = this.tickers.filter((ticker) =>
+      ticker.T.toLowerCase().includes(query)
+    );
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(
+      this.filteredTickers.length / this.itemsPerPage
+    );
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedTickers = this.filteredTickers.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
     }
   }
 
@@ -81,11 +213,6 @@ export class MarketComponent implements OnInit {
     if (this.amount > 1) {
       this.amount--;
     }
-  }
-
-  updateGraphPeriod(period: string): void {
-    console.log(`Graph updated for period: ${period}`);
-    // Placeholder for graph update
   }
 
   buyStock(amount: number): void {
@@ -111,10 +238,6 @@ export class MarketComponent implements OnInit {
         console.error('Purchase Error:', error);
       },
     });
-  }
-
-  getStocks(): Promise<any> {
-    return this.marketService.getUserStocks(this.userId).toPromise();
   }
 
   async sellStock(amount: number): Promise<void> {
@@ -176,33 +299,7 @@ export class MarketComponent implements OnInit {
     }
   }
 
-  updatePagination(): void {
-    this.totalPages = Math.ceil(
-      this.filteredTickers.length / this.itemsPerPage
-    );
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTickers = this.filteredTickers.slice(startIndex, endIndex);
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePagination();
-    }
-  }
-
-  selectTicker(ticker: TickerResult): void {
-    this.selectedTicker = ticker;
-    this.amount = 1;
-  }
-
-  filterTickers(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    this.filteredTickers = this.tickers.filter((ticker) =>
-      ticker.T.toLowerCase().includes(query)
-    );
-    this.currentPage = 1;
-    this.updatePagination();
+  getStocks(): Promise<any> {
+    return this.marketService.getUserStocks(this.userId).toPromise();
   }
 }

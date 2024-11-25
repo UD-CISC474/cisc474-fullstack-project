@@ -44,4 +44,15 @@ export class MarketService {
     const apiUrl = 'http://localhost:3000/api/user/stock';
     return this.http.put(apiUrl, payload);
   }
+
+  getCompanyData(ticker: string, from: string, to: string, interval: string): Observable<any> {
+    const apiUrl = 'http://localhost:3000/api/company-data';
+    const params = new HttpParams()
+      .set('ticker', ticker)
+      .set('from', from)
+      .set('to', to)
+      .set('interval', interval);
+    return this.http.get(apiUrl, { params });
+  }
+  
 }
