@@ -10,7 +10,7 @@ import { Stock, Transaction } from '../../interfaces';
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule], // Import CommonModule for Angular directives like *ngFor and *ngIf
+  imports: [CommonModule],
   templateUrl: './portfolio.component.html',
   styleUrls: ['./portfolio.component.scss'],
 })
@@ -18,7 +18,7 @@ export class PortfolioComponent {
   userId: string = 'default-user';
   portfolioValue: number = 0;
   transactions: Transaction[] = [];
-  availableCoins: number = 0; // Ensure the type is number
+  availableCoins: number = 0;
   gainLoss = 0;
   holdings: Stock[] = [];
 
@@ -65,7 +65,6 @@ export class PortfolioComponent {
       );
       const stocksArray: Transaction[] = Object.values(response.stocks || {});
 
-      // Create a Map to aggregate stocks by their symbol
       const stockMap = new Map<
         string,
         { shares: number; totalValue: number }
@@ -86,7 +85,6 @@ export class PortfolioComponent {
         }
       });
 
-      // Convert the aggregated Map to an array
       const preProcessedTransactions: Stock[] = Array.from(
         stockMap.entries()
       ).map(([stockSymbol, data]) => {

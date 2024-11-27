@@ -66,13 +66,10 @@ export class MarketComponent implements OnInit {
         this.marketService.getTickers(date)
       );
 
-      // Log the response for debugging
       console.log('Full ticker response:', tickerResponse);
 
-      // Access tickers inside the `response` object
       const tickers = tickerResponse?.response?.results;
 
-      // Check if `tickers` exists and is an array
       if (tickers && Array.isArray(tickers) && tickers.length > 0) {
         this.tickers = tickers;
 
@@ -220,19 +217,16 @@ export class MarketComponent implements OnInit {
     const totalPrice = Number((amount * this.selectedTicker.c).toFixed(2));
 
     try {
-      // Fetch user's current stock holdings
       const response = await firstValueFrom(
         this.marketService.getUserStocks(this.userId)
       );
       const userStocks: { [key: string]: Stock } = response.stocks || {};
 
-      // Convert stocks object to an array for easier manipulation
       const userStocksArray = Object.entries(userStocks).map(([id, stock]) => ({
         id,
         stock,
       }));
 
-      // Find the stock to sell
       const stockToSell = userStocksArray.find(
         ({ stock }) =>
           stock.stockSymbol === this.selectedTicker!.T &&
@@ -249,10 +243,8 @@ export class MarketComponent implements OnInit {
         return;
       }
 
-      // Proceed to update the stock holdings
       const updatedShares = stockToSell.stock.shares - amount;
 
-      // Update the stock entry with the new share count
       const payload = {
         userId: this.userId,
         stockSymbol: this.selectedTicker!.T,
@@ -263,7 +255,6 @@ export class MarketComponent implements OnInit {
 
       await firstValueFrom(this.marketService.updateUserStocks(payload));
 
-      // Update the user's currency balance
       const currencyResponse: any = await firstValueFrom(
         this.marketService.getCurrency(this.userId)
       );
@@ -277,7 +268,6 @@ export class MarketComponent implements OnInit {
         })
       );
 
-      // Update the UI and internal state
       await this.updateSelectedTickerValue();
       this.sellMessage = `Successfully sold ${amount} shares of ${this.selectedTicker.T}!`;
     } catch (error) {
