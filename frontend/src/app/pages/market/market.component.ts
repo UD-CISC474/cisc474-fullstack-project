@@ -66,13 +66,10 @@ export class MarketComponent implements OnInit {
         this.marketService.getTickers(date)
       );
 
-      // Log the response for debugging
       console.log('Full ticker response:', tickerResponse);
 
-      // Access tickers inside the `response` object
       const tickers = tickerResponse?.response?.results;
 
-      // Check if `tickers` exists and is an array
       if (tickers && Array.isArray(tickers) && tickers.length > 0) {
         this.tickers = tickers;
 
@@ -118,30 +115,58 @@ export class MarketComponent implements OnInit {
     // Placeholder for graph update
   }
 
-  buyStock(amount: number): void {
+  async buyStock(amount: number): Promise<void> {
     if (!this.selectedTicker || amount <= 0) {
       this.purchaseMessage = 'Please select a stock and enter a valid amount.';
       return;
     }
 
-    const payload = {
-      userId: this.userId,
-      stockSymbol: this.selectedTicker.T,
-      shares: amount,
-      price: this.selectedTicker.c,
-    };
+    if (!this.selectedTicker.c) {
+      this.purchaseMessage = 'Selected ticker has no current price.';
+      return;
+    }
 
-    this.marketService.purchaseStock(payload).subscribe({
-      next: async (response) => {
-        await this.updateSelectedTickerValue();
-        this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker?.T}!`;
-        console.log('Purchase Response:', response);
-      },
-      error: (error) => {
-        this.purchaseMessage = 'Failed to purchase stock. Try again.';
-        console.error('Purchase Error:', error);
-      },
-    });
+    const totalPrice = Number((amount * this.selectedTicker.c).toFixed(2));
+
+    try {
+      const currencyResponse: any = await firstValueFrom(
+        this.marketService.getCurrency(this.userId)
+      );
+      const fetchedCurrency = currencyResponse.currency.currency;
+
+      if (fetchedCurrency < totalPrice) {
+        this.purchaseMessage = 'Insufficient funds to purchase the stock.';
+        return;
+      }
+
+      const payload = {
+        userId: this.userId,
+        stockSymbol: this.selectedTicker.T,
+        shares: amount,
+        price: this.selectedTicker.c,
+      };
+
+      const purchaseResponse = await firstValueFrom(
+        this.marketService.purchaseStock(payload)
+      );
+      console.log('Purchase Response:', purchaseResponse);
+
+      const newCurrencyBalance = fetchedCurrency - totalPrice;
+
+      const updateResponse = await firstValueFrom(
+        this.marketService.updateCurrency({
+          userId: this.userId,
+          currency: newCurrencyBalance,
+        })
+      );
+      console.log('Currency Update Response:', updateResponse);
+
+      await this.updateSelectedTickerValue();
+      this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker.T}!`;
+    } catch (error) {
+      this.purchaseMessage = 'Failed to purchase stock. Please try again.';
+      console.error('Purchase Error:', error);
+    }
   }
 
   getStocks(): Promise<any> {
@@ -179,60 +204,75 @@ export class MarketComponent implements OnInit {
   }
 
   async sellStock(amount: number): Promise<void> {
-    try {
-      const response = await this.getStocks();
-      const userStocks: { [key: string]: Stock } = response.stocks;
+    if (!this.selectedTicker || amount <= 0) {
+      this.sellMessage = 'Please select a stock and enter a valid amount.';
+      return;
+    }
 
-      const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
-        userStocks
-      ).map(([id, stock]) => ({
+    if (!this.selectedTicker.c) {
+      this.sellMessage = 'Selected ticker has no current price.';
+      return;
+    }
+
+    const totalPrice = Number((amount * this.selectedTicker.c).toFixed(2));
+
+    try {
+      const response = await firstValueFrom(
+        this.marketService.getUserStocks(this.userId)
+      );
+      const userStocks: { [key: string]: Stock } = response.stocks || {};
+
+      const userStocksArray = Object.entries(userStocks).map(([id, stock]) => ({
         id,
         stock,
       }));
 
-      if (userStocksArray && userStocksArray.length > 0) {
-        const stockToSell = userStocksArray.find(
-          ({ stock }) =>
-            stock.stockSymbol === this.selectedTicker?.T &&
-            stock.price === this.selectedTicker?.c &&
-            amount <= stock.shares
-        );
+      const stockToSell = userStocksArray.find(
+        ({ stock }) =>
+          stock.stockSymbol === this.selectedTicker!.T &&
+          stock.price === this.selectedTicker!.c
+      );
 
-        if (stockToSell) {
-          console.log(
-            `Selling ${amount} shares of ${stockToSell.stock.stockSymbol}`
-          );
-
-          const payload = {
-            userId: this.userId,
-            stockSymbol: this.selectedTicker!.T,
-            shares: stockToSell.stock.shares - amount,
-            price: this.selectedTicker!.c,
-            stockId: stockToSell.id,
-          };
-
-          this.marketService.updateUserStocks(payload).subscribe({
-            next: async (response) => {
-              await this.updateSelectedTickerValue();
-              this.sellMessage = `Successfully sold ${amount} shares of ${this.selectedTicker?.T}!`;
-              console.log('Update successful:', response);
-            },
-            error: (error) => {
-              this.sellMessage = 'Failed to sell stock. Try again.';
-              console.error('Error updating stock:', error);
-            },
-          });
-        } else {
-          console.log('Selected stock not found in user holdings');
-          this.sellMessage = 'Selected stock not found in user holdings.';
-        }
-      } else {
-        console.log('No stocks found in user holdings');
-        this.sellMessage = 'No stocks found in user holdings.';
+      if (!stockToSell) {
+        this.sellMessage = 'You do not own this stock at the specified price.';
+        return;
       }
+
+      if (stockToSell.stock.shares < amount) {
+        this.sellMessage = 'You do not have enough shares to sell.';
+        return;
+      }
+
+      const updatedShares = stockToSell.stock.shares - amount;
+
+      const payload = {
+        userId: this.userId,
+        stockSymbol: this.selectedTicker!.T,
+        shares: updatedShares,
+        price: this.selectedTicker!.c,
+        stockId: stockToSell.id,
+      };
+
+      await firstValueFrom(this.marketService.updateUserStocks(payload));
+
+      const currencyResponse: any = await firstValueFrom(
+        this.marketService.getCurrency(this.userId)
+      );
+      const fetchedCurrency = currencyResponse.currency.currency;
+      const newCurrencyBalance = fetchedCurrency + totalPrice;
+
+      await firstValueFrom(
+        this.marketService.updateCurrency({
+          userId: this.userId,
+          currency: newCurrencyBalance,
+        })
+      );
+
+      await this.updateSelectedTickerValue();
+      this.sellMessage = `Successfully sold ${amount} shares of ${this.selectedTicker.T}!`;
     } catch (error) {
-      console.error('Error fetching stocks:', error);
-      this.sellMessage = 'Error fetching stocks. Please try again.';
+      this.sellMessage = 'Failed to sell stock. Please try again.';
+      console.error('Sell Error:', error);
     }
   }
 

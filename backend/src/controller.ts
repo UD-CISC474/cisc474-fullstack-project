@@ -339,4 +339,53 @@ export class Controller {
       });
     }
   }
+
+  public async getUserCurrency(req: express.Request, res: express.Response) {
+    try {
+      const { userId } = req.query;
+      const ref = database.ref(`/users/${userId}`);
+
+      const snapshot = await ref.get();
+      const currency = snapshot.val();
+
+      console.log("snapshot: ", snapshot);
+      console.log("currency: ", currency);
+
+      res.send({
+        success: true,
+        message: "Currency fetched successfully!",
+        currency,
+      });
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error fetching stock data: ", err.message);
+      res.status(500).send({
+        success: false,
+        message: "Internal server error",
+        error: err.message,
+      });
+    }
+  }
+
+  public async updateCurrency(req: express.Request, res: express.Response) {
+    try {
+      const { userId, currency } = req.body;
+      const ref = database.ref(`/users/${userId}/`);
+      await ref.update({ currency: currency });
+
+      res.send({
+        success: true,
+        message: "Currency updated successfully!",
+        currency,
+      });
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error updating currency: ", err.message);
+      res.status(500).send({
+        success: false,
+        message: "Internal server error",
+        error: err.message,
+      });
+    }
+  }
 }

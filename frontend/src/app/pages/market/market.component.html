@@ -26,7 +26,7 @@
         role="button"
       >
         <span class="stock-name">{{ ticker.T }}</span>
-        <span class="stock-price">{{ ticker.c }} USD</span>
+        <span class="stock-price">{{ ticker.c }} STC</span>
       </div>
       <div *ngIf="paginatedTickers.length === 0" class="no-results">
         No stocks found.
@@ -63,13 +63,13 @@
         <h3>{{ selectedTicker?.T || "Select a Stock" }}</h3>
         <p>
           Current Price:
-          <span> {{ selectedTicker?.c || "Loading" }} USD </span>
+          <span> {{ selectedTicker?.c || "Loading" }} STC </span>
         </p>
         <p>
           You own:
           <span>{{ selectedTicker?.us || "0" }}</span>
-          <span> shares, totaling to $</span>
-          <span> {{ selectedTicker?.uv || "0" }} USD </span>
+          <span> shares, totaling to </span>
+          <span> {{ selectedTicker?.uv || "0" }} STC </span>
         </p>
         <ng-template #noSelection>
           <span>Loading...</span>
