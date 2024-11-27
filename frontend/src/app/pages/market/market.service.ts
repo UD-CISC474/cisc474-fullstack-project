@@ -41,4 +41,19 @@ export class MarketService {
     const apiUrl = 'http://localhost:3000/api/user/stock';
     return this.http.put(apiUrl, payload);
   }
+
+  getCurrency(userId: string) {
+    const apiUrl = 'http://localhost:3000/api/user';
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get(apiUrl, { params });
+  }
+
+  updateCurrency(payload: {
+    userId: string;
+    currency: number;
+  }): Observable<any> {
+    console.log('testing post currency');
+    const apiUrl = 'http://localhost:3000/api/user';
+    return this.http.put(apiUrl, payload);
+  }
 }

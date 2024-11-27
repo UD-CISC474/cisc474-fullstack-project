@@ -169,6 +169,7 @@ export class ProfileComponent {
       await set(ref(this.db, 'users/' + userId), {
         username: this.signupUsername.value,
         portfolio: {},
+        currency: 10000,
       });
 
       console.log('User signed up successfully');

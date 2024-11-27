@@ -19,6 +19,8 @@ export class ApiRouter {
     this.router.put("/user/stock", this.controller.updateUserStock);
     this.router.get("/polygon/indices", this.controller.queryIndicesExpress);
     this.router.get("/polygon/all", this.controller.queryAllTickers);
+    this.router.put("/user", this.controller.updateCurrency);
+    this.router.get("/user", this.controller.getUserCurrency);
     return this.router;
   }
 }

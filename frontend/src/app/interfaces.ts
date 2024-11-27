@@ -39,3 +39,9 @@ export interface Stock {
   total: number;
   change: number;
 }
+
+export interface CurrencyResponse {
+  success: boolean;
+  message: string;
+  currency: number;
+}

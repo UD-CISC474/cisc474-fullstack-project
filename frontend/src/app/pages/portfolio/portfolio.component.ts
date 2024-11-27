@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { MarketService } from '../market/market.service';
 import { PortfolioService } from './portfolio.service';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
@@ -18,8 +18,8 @@ export class PortfolioComponent {
   userId: string = 'default-user';
   portfolioValue: number = 0;
   transactions: Transaction[] = [];
-  availableCoins = 10000;
-  gainLoss = 2000;
+  availableCoins: number = 0; // Ensure the type is number
+  gainLoss = 0;
   holdings: Stock[] = [];
 
   constructor(
@@ -32,10 +32,11 @@ export class PortfolioComponent {
       if (user) {
         this.userId = user.uid;
         console.log(`Authenticated user: ${this.userId}`);
+
         this.getPortfolioValue();
-        this.loadTransactions(this.userId);
-        this.marketService.getUserStocks(this.userId);
-        this.loadHoldings(this.userId);
+        this.loadTransactions();
+        this.loadHoldings();
+        this.loadAvailableCoins();
       } else {
         this.router.navigate(['/profile']);
         console.log('No user authenticated. Using default-user.');
@@ -43,90 +44,117 @@ export class PortfolioComponent {
     });
   }
 
-  async loadHoldings(userId: string): Promise<void> {
-    let response = await firstValueFrom(
-      this.portfolioService.getUserStocks(this.userId)
-    );
-    const stocksArray: Transaction[] = Object.values(response.stocks);
+  async loadAvailableCoins(): Promise<void> {
+    try {
+      const response: any = await firstValueFrom(
+        this.marketService.getCurrency(this.userId)
+      );
 
-    // Create a Map to aggregate stocks by their symbol
-    const stockMap = new Map<string, { shares: number; totalValue: number }>();
-
-    stocksArray.forEach((value) => {
-      const roundedPrice = Number(value.price.toFixed(2));
-      const roundedTotal = Number((value.shares * value.price).toFixed(2));
-
-      if (stockMap.has(value.stockSymbol)) {
-        const stockData = stockMap.get(value.stockSymbol)!;
-        stockData.shares += value.shares;
-        stockData.totalValue += roundedTotal;
-      } else {
-        stockMap.set(value.stockSymbol, {
-          shares: value.shares,
-          totalValue: roundedTotal,
-        });
-      }
-    });
-
-    // Convert the aggregated Map to an array
-    const preProcessedTransactions: Stock[] = Array.from(
-      stockMap.entries()
-    ).map(([stockSymbol, data]) => {
-      const averagePrice = Number((data.totalValue / data.shares).toFixed(2));
-      return {
-        stockSymbol,
-        shares: data.shares,
-        price: averagePrice,
-        total: Number(data.totalValue.toFixed(2)),
-        change: 0,
-      };
-    });
-
-    this.holdings = preProcessedTransactions.reverse();
+      this.availableCoins = Number(response.currency.currency.toFixed(2));
+      console.log(`Available coins: ${this.availableCoins}`);
+    } catch (error) {
+      console.error('Failed to fetch available coins:', error);
+      this.availableCoins = 0;
+    }
   }
 
-  async loadTransactions(userId: string): Promise<void> {
-    let response = await firstValueFrom(
-      this.portfolioService.getUserStocks(this.userId)
-    );
-    const stocksArray: Transaction[] = Object.values(response.stocks);
-    const preProcessedTransactions = stocksArray.map((value) => {
-      const roundedPrice = Number(value.price.toFixed(2));
-      const roundedTotal = Number((value.shares * value.price).toFixed(2));
-      const newValue: Transaction = {
-        stockSymbol: value.stockSymbol,
-        shares: value.shares,
-        price: roundedPrice,
-        timestamp: value.timestamp.slice(0, 10),
-        total: roundedTotal,
-      };
-      return newValue;
-    });
+  async loadHoldings(): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.portfolioService.getUserStocks(this.userId)
+      );
+      const stocksArray: Transaction[] = Object.values(response.stocks || {});
 
-    this.transactions = preProcessedTransactions.reverse();
+      // Create a Map to aggregate stocks by their symbol
+      const stockMap = new Map<
+        string,
+        { shares: number; totalValue: number }
+      >();
+
+      stocksArray.forEach((value) => {
+        const roundedTotal = Number((value.shares * value.price).toFixed(2));
+
+        if (stockMap.has(value.stockSymbol)) {
+          const stockData = stockMap.get(value.stockSymbol)!;
+          stockData.shares += value.shares;
+          stockData.totalValue += roundedTotal;
+        } else {
+          stockMap.set(value.stockSymbol, {
+            shares: value.shares,
+            totalValue: roundedTotal,
+          });
+        }
+      });
+
+      // Convert the aggregated Map to an array
+      const preProcessedTransactions: Stock[] = Array.from(
+        stockMap.entries()
+      ).map(([stockSymbol, data]) => {
+        const averagePrice = Number((data.totalValue / data.shares).toFixed(2));
+        return {
+          stockSymbol,
+          shares: data.shares,
+          price: averagePrice,
+          total: Number(data.totalValue.toFixed(2)),
+          change: 0,
+        };
+      });
+
+      this.holdings = preProcessedTransactions.reverse();
+    } catch (error) {
+      console.error('Failed to load holdings:', error);
+      this.holdings = [];
+    }
+  }
+
+  async loadTransactions(): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.portfolioService.getUserStocks(this.userId)
+      );
+      const stocksArray: Transaction[] = Object.values(response.stocks || {});
+
+      const preProcessedTransactions = stocksArray.map((value) => {
+        const roundedPrice = Number(value.price.toFixed(2));
+        const roundedTotal = Number((value.shares * value.price).toFixed(2));
+        const newValue: Transaction = {
+          stockSymbol: value.stockSymbol,
+          shares: value.shares,
+          price: roundedPrice,
+          timestamp: value.timestamp.slice(0, 10),
+          total: roundedTotal,
+        };
+        return newValue;
+      });
+
+      this.transactions = preProcessedTransactions.reverse();
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+      this.transactions = [];
+    }
   }
 
   async getPortfolioValue(): Promise<void> {
-    console.log(this.userId);
-    const response = await lastValueFrom(
-      this.marketService.getUserStocks(this.userId)
-    );
+    try {
+      const response = await firstValueFrom(
+        this.marketService.getUserStocks(this.userId)
+      );
 
-    const userStocks: { [key: string]: Transaction } = response.stocks;
-    const userStocksArray: { id: string; stock: Transaction }[] =
-      Object.entries(userStocks).map(([id, stock]) => ({
-        id,
-        stock,
-      }));
+      const userStocks: { [key: string]: Transaction } = response.stocks || {};
+      const userStocksArray = Object.values(userStocks);
 
-    let totalValue = 0;
-    if (userStocksArray && userStocksArray.length > 0) {
-      userStocksArray.map(({ stock }) => {
-        totalValue += stock.price * stock.shares;
-      });
+      let totalValue = 0;
+      if (userStocksArray && userStocksArray.length > 0) {
+        userStocksArray.forEach((stock) => {
+          totalValue += stock.price * stock.shares;
+        });
+      }
+
+      this.portfolioValue = Number(totalValue.toFixed(2));
+      console.log(`Portfolio Value: ${this.portfolioValue}`);
+    } catch (error) {
+      console.error('Failed to fetch portfolio value:', error);
+      this.portfolioValue = 0;
     }
-
-    this.portfolioValue = Number(totalValue.toFixed(2));
-    console.log(this.portfolioValue);
   }
 }
