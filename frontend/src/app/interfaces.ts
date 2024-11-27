@@ -18,25 +18,24 @@ export interface SelectedTicker {
   us: number; // total shares owned by user
 }
 
-export interface Transaction {
-  date: string;
-  symbol: string;
-  type: string;
-  shares: number;
-  price: number;
-  total: number;
-}
-
 export interface StocksResponse {
   success: boolean;
   message: string;
   stocks: { [id: string]: Stock };
 }
 
-export interface Stock {
+export interface Transaction {
   price: number;
   shares: number;
   stockSymbol: string;
   timestamp: string;
-  total: Number;
+  total: number;
+}
+
+export interface Stock {
+  price: number;
+  shares: number;
+  stockSymbol: string;
+  total: number;
+  change: number;
 }

@@ -5,7 +5,7 @@ import { MarketService } from '../market/market.service';
 import { PortfolioService } from './portfolio.service';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { Stock, StocksResponse } from '../../interfaces';
+import { Stock, Transaction } from '../../interfaces';
 
 @Component({
   selector: 'app-portfolio',
@@ -17,14 +17,10 @@ import { Stock, StocksResponse } from '../../interfaces';
 export class PortfolioComponent {
   userId: string = 'default-user';
   portfolioValue: number = 0;
-  transactions: Stock[] = [];
-  availableCash = 10000; // Available cash for trading
-  gainLoss = 2000; // Total gain/loss
-  holdings = [
-    { symbol: 'AAPL', shares: 10, price: 150, value: 1500, change: 0.02 },
-    { symbol: 'TSLA', shares: 5, price: 700, value: 3500, change: -0.01 },
-    { symbol: 'AMZN', shares: 2, price: 3200, value: 6400, change: 0.03 },
-  ];
+  transactions: Transaction[] = [];
+  availableCoins = 10000;
+  gainLoss = 2000;
+  holdings: Stock[] = [];
 
   constructor(
     private auth: Auth,
@@ -38,6 +34,8 @@ export class PortfolioComponent {
         console.log(`Authenticated user: ${this.userId}`);
         this.getPortfolioValue();
         this.loadTransactions(this.userId);
+        this.marketService.getUserStocks(this.userId);
+        this.loadHoldings(this.userId);
       } else {
         this.router.navigate(['/profile']);
         console.log('No user authenticated. Using default-user.');
@@ -45,15 +43,57 @@ export class PortfolioComponent {
     });
   }
 
+  async loadHoldings(userId: string): Promise<void> {
+    let response = await firstValueFrom(
+      this.portfolioService.getUserStocks(this.userId)
+    );
+    const stocksArray: Transaction[] = Object.values(response.stocks);
+
+    // Create a Map to aggregate stocks by their symbol
+    const stockMap = new Map<string, { shares: number; totalValue: number }>();
+
+    stocksArray.forEach((value) => {
+      const roundedPrice = Number(value.price.toFixed(2));
+      const roundedTotal = Number((value.shares * value.price).toFixed(2));
+
+      if (stockMap.has(value.stockSymbol)) {
+        const stockData = stockMap.get(value.stockSymbol)!;
+        stockData.shares += value.shares;
+        stockData.totalValue += roundedTotal;
+      } else {
+        stockMap.set(value.stockSymbol, {
+          shares: value.shares,
+          totalValue: roundedTotal,
+        });
+      }
+    });
+
+    // Convert the aggregated Map to an array
+    const preProcessedTransactions: Stock[] = Array.from(
+      stockMap.entries()
+    ).map(([stockSymbol, data]) => {
+      const averagePrice = Number((data.totalValue / data.shares).toFixed(2));
+      return {
+        stockSymbol,
+        shares: data.shares,
+        price: averagePrice,
+        total: Number(data.totalValue.toFixed(2)),
+        change: 0,
+      };
+    });
+
+    this.holdings = preProcessedTransactions.reverse();
+  }
+
   async loadTransactions(userId: string): Promise<void> {
     let response = await firstValueFrom(
       this.portfolioService.getUserStocks(this.userId)
     );
-    const stocksArray: Stock[] = Object.values(response.stocks);
+    const stocksArray: Transaction[] = Object.values(response.stocks);
     const preProcessedTransactions = stocksArray.map((value) => {
       const roundedPrice = Number(value.price.toFixed(2));
       const roundedTotal = Number((value.shares * value.price).toFixed(2));
-      const newValue: Stock = {
+      const newValue: Transaction = {
         stockSymbol: value.stockSymbol,
         shares: value.shares,
         price: roundedPrice,
@@ -72,13 +112,12 @@ export class PortfolioComponent {
       this.marketService.getUserStocks(this.userId)
     );
 
-    const userStocks: { [key: string]: Stock } = response.stocks;
-    const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
-      userStocks
-    ).map(([id, stock]) => ({
-      id,
-      stock,
-    }));
+    const userStocks: { [key: string]: Transaction } = response.stocks;
+    const userStocksArray: { id: string; stock: Transaction }[] =
+      Object.entries(userStocks).map(([id, stock]) => ({
+        id,
+        stock,
+      }));
 
     let totalValue = 0;
     if (userStocksArray && userStocksArray.length > 0) {
