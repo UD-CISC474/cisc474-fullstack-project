@@ -17,3 +17,26 @@ export interface SelectedTicker {
   uv: number; // total user value owned in this stock
   us: number; // total shares owned by user
 }
+
+export interface Transaction {
+  date: string;
+  symbol: string;
+  type: string;
+  shares: number;
+  price: number;
+  total: number;
+}
+
+export interface StocksResponse {
+  success: boolean;
+  message: string;
+  stocks: { [id: string]: Stock };
+}
+
+export interface Stock {
+  price: number;
+  shares: number;
+  stockSymbol: string;
+  timestamp: string;
+  total: Number;
+}
