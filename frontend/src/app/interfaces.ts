@@ -38,4 +38,5 @@ export interface Stock {
   shares: number;
   stockSymbol: string;
   timestamp: string;
+  total: Number;
 }

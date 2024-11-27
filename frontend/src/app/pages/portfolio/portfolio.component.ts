@@ -50,7 +50,20 @@ export class PortfolioComponent {
     );
     const stocksObject = response.stocks;
     const stocksArray: Stock[] = Object.values(response.stocks);
-    this.transactions = stocksArray.reverse();
+    const preProcessedTransactions = stocksArray.map((value) => {
+      const roundedPrice = Number(value.price.toFixed(2));
+      const roundedTotal = Number((value.shares * value.price).toFixed(2));
+      const newValue: Stock = {
+        stockSymbol: value.stockSymbol,
+        shares: value.shares,
+        price: roundedPrice,
+        timestamp: value.timestamp.slice(0, 10),
+        total: roundedTotal,
+      };
+      return newValue;
+    });
+
+    this.transactions = preProcessedTransactions.reverse();
   }
 
   async getPortfolioValue(): Promise<void> {
