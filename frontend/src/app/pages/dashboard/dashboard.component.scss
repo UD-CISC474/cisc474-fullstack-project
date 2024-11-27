@@ -1,6 +1,6 @@
 .dashboard-container {
   padding: 20px;
-  background-color: #f0f2f5; // Subtle background color for dashboard
+  background-color: #f0f2f5;
   border-radius: 8px;
 
   .dashboard-grid {
@@ -16,31 +16,26 @@
       font-weight: bold;
       color: #333;
 
-      // NASDAQ Tile
       &.nasdaq-tile {
         background-color: lightblue;
         color: #003366;
       }
 
-      // Portfolio Value Tile
       &.portfolio-value-tile {
         background-color: #ddbdf1;
         color: #4a004a;
       }
 
-      // Highest Earner Tile
       &.highest-earner-tile {
         background-color: lightgreen;
         color: #006400;
       }
 
-      // Biggest Loser Tile
       &.biggest-loser-tile {
         background-color: lightpink;
         color: #8b0000;
       }
 
-      // News Tiles
       &.news-tile {
         background-color: #ddbdf1;
         color: #333;
@@ -49,7 +44,6 @@
   }
 }
 
-// Responsive adjustments
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 10px;
@@ -59,7 +53,6 @@
     mat-grid-tile {
       font-size: 1rem;
 
-      // Reduce padding for news tiles
       &.news-tile {
         padding: 5px;
       }
