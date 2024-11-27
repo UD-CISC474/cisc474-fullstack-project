@@ -36,6 +36,7 @@ export class PortfolioComponent {
       if (user) {
         this.userId = user.uid;
         console.log(`Authenticated user: ${this.userId}`);
+        this.getPortfolioValue();
         this.loadTransactions(this.userId);
       } else {
         this.router.navigate(['/profile']);
@@ -48,7 +49,6 @@ export class PortfolioComponent {
     let response = await firstValueFrom(
       this.portfolioService.getUserStocks(this.userId)
     );
-    const stocksObject = response.stocks;
     const stocksArray: Stock[] = Object.values(response.stocks);
     const preProcessedTransactions = stocksArray.map((value) => {
       const roundedPrice = Number(value.price.toFixed(2));
@@ -86,6 +86,8 @@ export class PortfolioComponent {
         totalValue += stock.price * stock.shares;
       });
     }
+
     this.portfolioValue = Number(totalValue.toFixed(2));
+    console.log(this.portfolioValue);
   }
 }
