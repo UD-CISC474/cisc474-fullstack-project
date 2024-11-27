@@ -58,9 +58,8 @@
     <table>
       <thead>
         <tr>
-          <th>Date</th>
           <th>Stock</th>
-          <th>Type</th>
+          <th>Timestamp</th>
           <th>Shares</th>
           <th>Price</th>
           <th>Total</th>
@@ -68,12 +67,11 @@
       </thead>
       <tbody>
         <tr *ngFor="let transaction of transactions">
-          <td>{{ transaction.date | date : "short" }}</td>
-          <td>{{ transaction.symbol }}</td>
-          <td>{{ transaction.type }}</td>
+          <td>{{ transaction.stockSymbol }}</td>
+          <td>{{ transaction.timestamp }}</td>
           <td>{{ transaction.shares }}</td>
-          <td>{{ transaction.price | currency }}</td>
-          <td>{{ transaction.total | currency }}</td>
+          <td>{{ transaction.price }}</td>
+          <td>{{ transaction.shares * transaction.price }}</td>
         </tr>
       </tbody>
     </table>

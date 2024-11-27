@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { lastValueFrom } from 'rxjs';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { MarketService } from '../market/market.service';
 import { PortfolioService } from './portfolio.service';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { Stock } from '../../interfaces';
+import { Stock, StocksResponse } from '../../interfaces';
 
 @Component({
   selector: 'app-portfolio',
@@ -17,9 +17,9 @@ import { Stock } from '../../interfaces';
 export class PortfolioComponent {
   userId: string = 'default-user';
   portfolioValue: number = 0;
+  transactions: Stock[] = [];
   availableCash = 10000; // Available cash for trading
   gainLoss = 2000; // Total gain/loss
-
   holdings = [
     { symbol: 'AAPL', shares: 10, price: 150, value: 1500, change: 0.02 },
     { symbol: 'TSLA', shares: 5, price: 700, value: 3500, change: -0.01 },
@@ -36,7 +36,7 @@ export class PortfolioComponent {
       if (user) {
         this.userId = user.uid;
         console.log(`Authenticated user: ${this.userId}`);
-        this.getPortfolioValue();
+        this.loadTransactions(this.userId);
       } else {
         this.router.navigate(['/profile']);
         console.log('No user authenticated. Using default-user.');
@@ -44,26 +44,17 @@ export class PortfolioComponent {
     });
   }
 
-  transactions = [
-    {
-      date: new Date(),
-      symbol: 'AAPL',
-      type: 'Buy',
-      shares: 10,
-      price: 150,
-      total: 1500,
-    },
-    {
-      date: new Date(),
-      symbol: 'TSLA',
-      type: 'Sell',
-      shares: 5,
-      price: 700,
-      total: 3500,
-    },
-  ];
+  async loadTransactions(userId: string): Promise<void> {
+    let response = await firstValueFrom(
+      this.portfolioService.getUserStocks(this.userId)
+    );
+    const stocksObject = response.stocks;
+    const stocksArray: Stock[] = Object.values(response.stocks);
+    this.transactions = stocksArray.reverse();
+  }
 
   async getPortfolioValue(): Promise<void> {
+    console.log(this.userId);
     const response = await lastValueFrom(
       this.marketService.getUserStocks(this.userId)
     );

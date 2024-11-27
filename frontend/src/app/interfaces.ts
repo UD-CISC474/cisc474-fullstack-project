@@ -26,3 +26,16 @@ export interface Transaction {
   price: number;
   total: number;
 }
+
+export interface StocksResponse {
+  success: boolean;
+  message: string;
+  stocks: { [id: string]: Stock };
+}
+
+export interface Stock {
+  price: number;
+  shares: number;
+  stockSymbol: string;
+  timestamp: string;
+}
