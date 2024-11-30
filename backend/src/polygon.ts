@@ -73,7 +73,7 @@ const queryCompanyDataNoCache = async ({
 }: CompanyQueryParams): Promise<CompanyResponse> => {
   const timespan = interval === "half-hour" ? "minute" : interval;
   const multiplier = interval === "half-hour" ? 30 : 1;
-
+  console.log(POLYGON_API_KEY);
   const data = await fetch(
     `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}`,
     {
@@ -84,12 +84,14 @@ const queryCompanyDataNoCache = async ({
   )
     .then((res) => res.json())
     .then((res) => {
+      const successful = res.resultsCount && res.resultsCount > 0;
       return {
+        successful: successful ? true : false,
         ticker,
-        count: res.resultsCount,
+        count: successful ? res.resultsCount : 0,
         start: new Date(from),
         end: new Date(to),
-        prices: res.results.map(
+        prices: successful ? res.results.map(
           (e: {
             c: number; // close
             h: number; // high
@@ -107,7 +109,7 @@ const queryCompanyDataNoCache = async ({
               openTimestamp: e.t,
             };
           }
-        ),
+        ) : [],
       };
     });
 

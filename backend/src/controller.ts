@@ -1,7 +1,7 @@
 import express from "express";
 import { database } from "./firebase";
 import {
-  queryCompanyDataNoCache,
+  queryCompanyData,
   queryIndices,
   queryTickers,
   TickerResult,
@@ -9,6 +9,23 @@ import {
 
 class MyObject {
   constructor(public msg: string, public value: number = 42) {}
+}
+
+type Req = express.Request;
+type Res = express.Response;
+
+export class newController {
+  public async getTicker(req: Req, res: Res): Promise<void> {
+    const { ticker, start, end } = req.params;
+    
+    const stockData = await queryCompanyData({
+      ticker,
+      from: start,
+      to: end
+    });
+
+    res.send(stockData);
+  }
 }
 
 export class Controller {
@@ -50,40 +67,40 @@ export class Controller {
     }
   }
 
-  public async stockTest(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      // Extract parameters from the request body, with defaults
-      const ticker = req.body.ticker || "AAPL"; // Default to "AAPL"
-      const from = req.body.from || "2024-11-11"; // Default to "2024-11-10"
-      const to = req.body.to || "2024-11-15"; // Default to "2024-11-15"
-      const interval = req.body.interval || "day"; // Default to "day"
+  // public async stockTest(
+  //   req: express.Request,
+  //   res: express.Response
+  // ): Promise<void> {
+  //   try {
+  //     // Extract parameters from the request body, with defaults
+  //     const ticker = req.body.ticker || "AAPL"; // Default to "AAPL"
+  //     const from = req.body.from || "2024-11-11"; // Default to "2024-11-10"
+  //     const to = req.body.to || "2024-11-15"; // Default to "2024-11-15"
+  //     const interval = req.body.interval || "day"; // Default to "day"
 
-      // Fetch stock data
-      const result = await queryCompanyDataNoCache({
-        ticker,
-        from,
-        to,
-        interval,
-      });
+  //     // Fetch stock data
+  //     const result = await queryCompanyDataNoCache({
+  //       ticker,
+  //       from,
+  //       to,
+  //       interval,
+  //     });
 
-      // Write data to Firebase
-      const ref = database.ref(`/stocks/${ticker}`);
-      await ref.set({ data: result });
+  //     // Write data to Firebase
+  //     const ref = database.ref(`/stocks/${ticker}`);
+  //     await ref.set({ data: result });
 
-      // Send success response
-      res.send({
-        success: true,
-        message: `Posted ${ticker} stock data to Firebase!`,
-      });
-    } catch (error) {
-      const err = error as Error;
-      console.error("Error posting stocks to Firebase: ", err);
-      res.status(500).send({ success: false, error: err.message });
-    }
-  }
+  //     // Send success response
+  //     res.send({
+  //       success: true,
+  //       message: `Posted ${ticker} stock data to Firebase!`,
+  //     });
+  //   } catch (error) {
+  //     const err = error as Error;
+  //     console.error("Error posting stocks to Firebase: ", err);
+  //     res.status(500).send({ success: false, error: err.message });
+  //   }
+  // }
 
   public async postAllStocks(
     req: express.Request,
