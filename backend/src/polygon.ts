@@ -1,4 +1,4 @@
-import { environment } from "./environment";
+import { token as POLYGON_API_KEY } from "../polygon-credentials.json";
 
 interface QueryParams {
   from?: Date | string;
@@ -27,8 +27,6 @@ interface CompanyResponse {
   end: Date;
   prices: Price[];
 }
-
-const POLYGON_API_KEY = environment.POLYGON_API_KEY || "";
 
 // Directly queries Polygon API for price information about a company/stock
 const queryCompanyDataNoCache = async ({
