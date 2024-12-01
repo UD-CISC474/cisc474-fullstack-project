@@ -4,7 +4,8 @@ import {
   getPortfolio,
   buyStock,
   sellStock,
-  login
+  login,
+  testFirebase
 } from "./controller";
 
 export class ApiRouter {
@@ -30,6 +31,9 @@ export class ApiRouter {
     // Buy/sell stock (auth bearer token required)
     this.router.post("/buy", buyStock);
     this.router.post("/sell", sellStock);
+
+    // Test firebase route
+    this.router.get("/test-firebase", testFirebase);
 
     return this.router;
   }

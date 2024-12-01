@@ -1,4 +1,5 @@
-import { token as POLYGON_API_KEY } from "../polygon-credentials.json";
+// import { database } from "./firebase";
+// import { token as POLYGON_API_KEY } from "../polygon-credentials.json";
 
 interface QueryParams {
   from?: Date | string;
@@ -21,6 +22,7 @@ interface Price {
 
 interface CompanyResponse {
   successful: boolean;
+  cacheHit: boolean;
   ticker: string;
   count: number;
   start: Date;
@@ -28,8 +30,32 @@ interface CompanyResponse {
   prices: Price[];
 }
 
+// Used for scamming polygon to bypass 5 request/minute rate limit
+class PolygonKeyGen {
+  private currentKey = 0;
+  private keys = [
+    "EYZvJp3byO1Jqo3yZd_02qSBfJZHzdGK",
+    "XqNuRVfD2O1aqFmQP_xbGNPhm3N7JoFb",
+    "RBXeBQsYN5zMUkB11JVh58x3WSMLvwcc",
+    "bgR_CQpWzfcb7taTmCgofuNCVBdR4RNh",
+    "OJCgCDXeFXdg7Sugxmqlhptz_WOr0YRi",
+    "Y2SOnSuTA8qAkpqcSjEvk6HPfLfbmTHO",
+    "sDpnXwmj8JfLzfIOjPXfz61u4mT6ukWZ",
+    "cu08jnknbBkKgqh6c_bPMDEOTeBKHLoi",
+    "AIA4C6X1E8K4OYBm251tnXyCpumv_LCI",
+    "PkKi7nu09KgdMb8Fa9Nn76fJz_0J2M_0"
+  ];
+
+  public get key(): string {
+    const key = this.keys[this.currentKey];
+    this.currentKey = (this.currentKey + 1) % this.keys.length;
+    return key;
+  }
+}
+const polyKeyGen = new PolygonKeyGen();
+
 // Directly queries Polygon API for price information about a company/stock
-const queryCompanyDataNoCache = async ({
+const queryCompanyData = async ({
   ticker,
   from = new Date().toISOString().substring(0, 10),
   to = new Date().toISOString().substring(0, 10),
@@ -42,7 +68,7 @@ const queryCompanyDataNoCache = async ({
     `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}`,
     {
       headers: {
-        Authorization: `Bearer ${POLYGON_API_KEY}`,
+        Authorization: `Bearer ${polyKeyGen.key}`,
       },
     }
   )
@@ -51,6 +77,7 @@ const queryCompanyDataNoCache = async ({
       const successful = res.resultsCount && res.resultsCount > 0;
       return {
         successful: successful ? true : false,
+        cacheHit: false,
         ticker,
         count: successful ? res.resultsCount : 0,
         start: new Date(from),
@@ -78,17 +105,6 @@ const queryCompanyDataNoCache = async ({
     });
 
   return data;
-};
-
-// Retrieves price information about a company/stock (checks firebase as cache)
-const queryCompanyData = async ({
-  ticker,
-  from = new Date().toISOString().substring(0, 10),
-  to = new Date().toISOString().substring(0, 10),
-  interval = "half-hour",
-}: CompanyQueryParams): Promise<CompanyResponse> => {
-  // TODO: Check firebase for company data before querying polygon
-  return queryCompanyDataNoCache({ ticker, from, to, interval });
 };
 
 export {

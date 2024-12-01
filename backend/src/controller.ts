@@ -16,7 +16,7 @@ const getAuthentication = async () => {
 
 // Used by buyStock & sellStock to execute trades
 const exchangeStock = async () => {
-  
+
 }
 
 
@@ -54,4 +54,11 @@ const login = async (req: Req, res: Res): Promise<void> => {
 
 }
 
-export { getStock, getPortfolio, buyStock, sellStock, login }
+// Test firebase route (can be deleted)
+const testFirebase = async (req: Req, res: Res): Promise<void> => {
+  const ref = database.ref("/test");
+  const value = (await ref.get()).val();
+  res.send({ value });
+}
+
+export { getStock, getPortfolio, buyStock, sellStock, login, testFirebase }

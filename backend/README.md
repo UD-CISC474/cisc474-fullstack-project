@@ -8,10 +8,3 @@ npx ts-node-dev src/app.ts
 
 ## Setup
 For Firebase Admin to work, place the service account JSON file at `/backend/firebase-service-account.json`.
-
-For Polygon to work, create the file `/backend/polygon-credentials.json` with the following contents:
-```json
-{
-  "token": ""  // your Polygon API token goes here
-}
-```
