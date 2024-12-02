@@ -1,7 +1,11 @@
 import express from "express";
 import { database } from "./firebase";
 import { queryCompanyData } from "./polygon";
-import { getAuthentication, login as authLogin } from "./auth";
+import {
+  getAuthentication,
+  login as authLogin,
+  createAccount as authCreateAccount
+} from "./auth";
 
 
 // HELPER FUNCTIONS -- DO NOT EXPORT THESE
@@ -52,6 +56,13 @@ const login = async (req: Req, res: Res): Promise<void> => {
   res.send(response);
 }
 
+// Express route to create a new user
+const createAccount = async (req: Req, res: Res): Promise<void> => {
+  const { username, password } = req.body;
+  const response = await authCreateAccount({ username, password });
+  res.send(response);
+}
+
 // Test firebase route (can be deleted)
 const testFirebase = async (req: Req, res: Res): Promise<void> => {
   const ref = database.ref("/test");
@@ -66,4 +77,4 @@ const testTokenAuth = async (req: Req, res: Res): Promise<void> => {
   res.send(response);
 }
 
-export { getStock, getPortfolio, buyStock, sellStock, login, testFirebase, testTokenAuth }
+export { getStock, getPortfolio, buyStock, sellStock, login, createAccount, testFirebase, testTokenAuth }

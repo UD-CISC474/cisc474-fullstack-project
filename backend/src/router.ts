@@ -6,7 +6,8 @@ import {
   sellStock,
   login,
   testFirebase,
-  testTokenAuth
+  testTokenAuth,
+  createAccount
 } from "./controller";
 
 export class ApiRouter {
@@ -23,6 +24,7 @@ export class ApiRouter {
 
     // User sign-in
     this.router.post("/login", login);
+    this.router.post("/create-account", createAccount);
 
     // Retireve user portfolio (start/end specify date range)
     // Auth bearer token required
