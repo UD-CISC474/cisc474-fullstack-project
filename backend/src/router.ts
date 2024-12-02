@@ -29,11 +29,11 @@ export class ApiRouter {
     this.router.post("/create-account", createAccount);
 
     // Retireve user portfolio (start/end specify date range)
-    // Auth bearer token required
+    // Auth token required
     this.router.get("/portfolio", getPortfolio);
     this.router.get("/portfolio/:start/:end", getPortfolio);
 
-    // Buy/sell stock (auth bearer token required)
+    // Buy/sell stock (auth token required)
     this.router.post("/buy", buyStock);
     this.router.post("/sell", sellStock);
 
