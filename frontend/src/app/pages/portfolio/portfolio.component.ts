@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { MarketService } from '../market/market.service';
 import { PortfolioService } from './portfolio.service';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { Stock, Transaction } from '../../interfaces';
 
@@ -23,26 +22,10 @@ export class PortfolioComponent {
   holdings: Stock[] = [];
 
   constructor(
-    private auth: Auth,
     private marketService: MarketService,
     private router: Router,
     private portfolioService: PortfolioService
-  ) {
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-
-        this.getPortfolioValue();
-        this.loadTransactions();
-        this.loadHoldings();
-        this.loadAvailableCoins();
-      } else {
-        this.router.navigate(['/profile']);
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
-  }
+  ) {}
 
   async loadAvailableCoins(): Promise<void> {
     try {

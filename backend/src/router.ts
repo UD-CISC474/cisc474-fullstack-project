@@ -8,7 +8,8 @@ import {
   logout,
   testFirebase,
   testTokenAuth,
-  createAccount
+  createAccount,
+  queryAllTickers,
 } from "./controller";
 
 export class ApiRouter {
@@ -16,12 +17,12 @@ export class ApiRouter {
 
   // Creates the routes for this router and returns a populated router object
   public getRouter(): express.Router {
-
     // Retrieve price information about a stock/company (no auth required)
     // start/end specify date range for price info
     this.router.get("/stock/:ticker", getStock);
     this.router.get("/stock/:ticker/:start", getStock);
     this.router.get("/stock/:ticker/:start/:end", getStock);
+    this.router.get("/stock", queryAllTickers);
 
     // User sign-in
     this.router.post("/login", login);
@@ -39,7 +40,7 @@ export class ApiRouter {
 
     // Test routes (can delete)
     this.router.get("/test-firebase", testFirebase);
-    this.router.get("/authtoken/:username/:token", testTokenAuth)
+    this.router.get("/authtoken/:username/:token", testTokenAuth);
 
     return this.router;
   }

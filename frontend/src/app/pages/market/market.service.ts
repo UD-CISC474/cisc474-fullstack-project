@@ -10,7 +10,7 @@ export class MarketService {
 
   getTickers(date: string): Observable<any> {
     const params = new HttpParams().set('date', date);
-    const apiUrl = 'http://localhost:3000/api/polygon/all';
+    const apiUrl = 'http://localhost:3000/api/stock';
     return this.http.get(apiUrl, { params });
   }
 

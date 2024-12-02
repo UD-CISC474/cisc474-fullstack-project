@@ -3,9 +3,8 @@ import { MarketService } from './market.service';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { MatIcon } from '@angular/material/icon';
-import { CompanyResponse, SelectedTicker, Stock } from '../../interfaces';
+import { SelectedTicker, Stock, TickerResult } from '../../interfaces';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -17,45 +16,32 @@ import { Router } from '@angular/router';
   imports: [NgFor, FormsModule, NgIf, MatIcon],
 })
 export class MarketComponent implements OnInit {
-  tickers: CompanyResponse[] = [];
-  filteredTickers: CompanyResponse[] = [];
+  tickers: TickerResult[] = [];
+  filteredTickers: TickerResult[] = [];
   searchQuery: string = '';
   selectedTicker: SelectedTicker | null = null;
   currentPage: number = 1;
   itemsPerPage: number = 50;
   totalPages: number = 0;
-  paginatedTickers: CompanyResponse[] = [];
+  paginatedTickers: TickerResult[] = [];
 
   userId: string = 'default-user';
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
 
-  constructor(
-    public auth: Auth,
-    private marketService: MarketService,
-    private router: Router
-  ) {
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-      } else {
-        this.router.navigate(['/profile']);
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
-  }
+  constructor(private marketService: MarketService, private router: Router) {}
 
   ngOnInit(): void {
     console.log(this.userId);
     let yesterday: string;
-    if (dayjs().day().toString() === 'Monday') {
+    console.log('today:', dayjs().day().toString());
+    if (dayjs().day().toString() === '1') {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
     } else {
       yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
-
+    console.log(yesterday);
     this.loadTickers(yesterday);
   }
 
@@ -67,18 +53,21 @@ export class MarketComponent implements OnInit {
 
       console.log('Full ticker response:', tickerResponse);
 
-      const tickers = tickerResponse?.response?.results;
+      const tickers = tickerResponse?.data?.results;
 
       if (tickers && Array.isArray(tickers) && tickers.length > 0) {
         this.tickers = tickers;
 
         this.selectedTicker = {
-          T: this.tickers[0].ticker,
-          c: this.tickers[0].prices[0].close,
-          h: this.tickers[0].prices[0].high,
-          l: this.tickers[0].prices[0].low,
-          o: this.tickers[0].prices[0].open,
-          t: this.tickers[0].prices[0].openTimestamp,
+          T: this.tickers[0].T,
+          c: this.tickers[0].c,
+          h: this.tickers[0].h,
+          l: this.tickers[0].l,
+          n: this.tickers[0].n,
+          o: this.tickers[0].o,
+          t: this.tickers[0].t,
+          v: this.tickers[0].v,
+          vw: this.tickers[0].vw,
           uv: 0,
           us: 0,
         };
@@ -158,7 +147,7 @@ export class MarketComponent implements OnInit {
       console.log('Currency Update Response:', updateResponse);
 
       await this.updateSelectedTickerValue();
-      this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker.t}!`;
+      this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker.T}!`;
     } catch (error) {
       this.purchaseMessage = 'Failed to purchase stock. Please try again.';
       console.error('Purchase Error:', error);
@@ -296,14 +285,17 @@ export class MarketComponent implements OnInit {
     }
   }
 
-  async selectTicker(ticker: CompanyResponse): Promise<void> {
+  async selectTicker(ticker: TickerResult): Promise<void> {
     this.selectedTicker = {
-      T: ticker.ticker,
-      c: ticker.prices[0].close,
-      h: ticker.prices[0].high,
-      l: ticker.prices[0].low,
-      o: ticker.prices[0].open,
-      t: ticker.prices[0].openTimestamp,
+      T: ticker.T,
+      c: ticker.c,
+      h: ticker.h,
+      l: ticker.l,
+      n: ticker.n,
+      o: ticker.o,
+      t: ticker.t,
+      v: ticker.v,
+      vw: ticker.vw,
       uv: 0,
       us: 0,
     };
@@ -316,7 +308,7 @@ export class MarketComponent implements OnInit {
   filterTickers(): void {
     const query = this.searchQuery.toLowerCase().trim();
     this.filteredTickers = this.tickers.filter((ticker) =>
-      ticker.ticker.toLowerCase().includes(query)
+      ticker.T.toLowerCase().includes(query)
     );
     this.currentPage = 1;
     this.updatePagination();

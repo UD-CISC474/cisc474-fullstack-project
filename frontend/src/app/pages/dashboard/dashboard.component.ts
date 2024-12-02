@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MarketService } from '../market/market.service';
 import { DashboardService } from './dashboard.service';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import dayjs from 'dayjs';
 import { Stock } from '../../interfaces';
 import { lastValueFrom } from 'rxjs';
@@ -25,22 +24,10 @@ export class DashboardComponent {
   recentNews: string[] = ['NEWS', 'NEWS', 'NEWS', 'NEWS'];
 
   constructor(
-    private auth: Auth,
     private marketService: MarketService,
     private router: Router,
     private dashboardService: DashboardService
-  ) {
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-        this.getPortfolioValue();
-      } else {
-        this.router.navigate(['/profile']);
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     let yesterday: string;
