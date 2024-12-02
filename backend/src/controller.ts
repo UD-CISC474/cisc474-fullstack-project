@@ -4,6 +4,7 @@ import { queryCompanyData } from "./polygon";
 import {
   getAuthentication,
   login as authLogin,
+  logout as authLogout,
   createAccount as authCreateAccount
 } from "./auth";
 
@@ -56,6 +57,13 @@ const login = async (req: Req, res: Res): Promise<void> => {
   res.send(response);
 }
 
+// Express route to logout a user
+const logout = (req: Req, res: Res): void => {
+  const { username, token } = req.body;
+  const response = authLogout({ username, token });
+  res.send(response);
+}
+
 // Express route to create a new user
 const createAccount = async (req: Req, res: Res): Promise<void> => {
   const { username, password } = req.body;
@@ -77,4 +85,14 @@ const testTokenAuth = async (req: Req, res: Res): Promise<void> => {
   res.send(response);
 }
 
-export { getStock, getPortfolio, buyStock, sellStock, login, createAccount, testFirebase, testTokenAuth }
+export {
+  getStock,
+  getPortfolio,
+  buyStock,
+  sellStock,
+  login,
+  logout,
+  createAccount,
+  testFirebase,
+  testTokenAuth
+}

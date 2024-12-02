@@ -86,11 +86,18 @@ const login = ({
 }
 
 // Logs the current user out
-const logout = async ({
-  username,
-  token
-}: TokenCredentials) => {
-
+const logout = ({
+  username
+}: TokenCredentials): AuthorizedUser => {
+  const ref = database.ref(`/users/${username}/token`);
+  ref.set("");
+  
+  return {
+    username: "",
+    token: "",
+    valid: false,
+    message: "Signed out"
+  }
 }
 
 // Used to create a new user account
@@ -130,13 +137,6 @@ const createAccount = ({
 
   })
 }
-
-// const createAccount = async ({
-//   username,
-//   password
-// }: AuthCredentials) => {
-
-// }
 
 export { getAuthentication, login, logout, createAccount }
 export type { AuthorizedUser }

@@ -5,6 +5,7 @@ import {
   buyStock,
   sellStock,
   login,
+  logout,
   testFirebase,
   testTokenAuth,
   createAccount
@@ -24,6 +25,7 @@ export class ApiRouter {
 
     // User sign-in
     this.router.post("/login", login);
+    this.router.post("/logout", logout);
     this.router.post("/create-account", createAccount);
 
     // Retireve user portfolio (start/end specify date range)
