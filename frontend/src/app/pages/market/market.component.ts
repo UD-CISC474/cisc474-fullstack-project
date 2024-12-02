@@ -99,23 +99,43 @@ export class MarketComponent implements OnInit {
     }
   }
 
+  // calculateFromDate(period: string): string {
+  //   const today = new Date();
+  //   switch (period) {
+  //     case '1D':
+  //       return new Date(today.setDate(today.getDate() - 1)).toISOString().split('T')[0];
+  //     case '5D':
+  //       return new Date(today.setDate(today.getDate() - 5)).toISOString().split('T')[0];
+  //     case '1M':
+  //       return new Date(today.setMonth(today.getMonth() - 1)).toISOString().split('T')[0];
+  //     case '6M':
+  //       return new Date(today.setMonth(today.getMonth() - 6)).toISOString().split('T')[0];
+  //     case '1Y':
+  //       return new Date(today.setFullYear(today.getFullYear() - 1)).toISOString().split('T')[0];
+  //     case '2Y':
+  //       return new Date(today.setFullYear(today.getFullYear() - 2)).toISOString().split('T')[0];
+  //     default:
+  //       return today.toISOString().split('T')[0];
+  //   }
+  // }
+
   calculateFromDate(period: string): string {
-    const today = new Date();
+    const today = dayjs();
     switch (period) {
       case '1D':
-        return new Date(today.setDate(today.getDate() - 1)).toISOString().split('T')[0];
+        return today.subtract(1, 'day').format('YYYY-MM-DD');
       case '5D':
-        return new Date(today.setDate(today.getDate() - 5)).toISOString().split('T')[0];
+        return today.subtract(5, 'day').format('YYYY-MM-DD');
       case '1M':
-        return new Date(today.setMonth(today.getMonth() - 1)).toISOString().split('T')[0];
+        return today.subtract(1, 'month').format('YYYY-MM-DD');
       case '6M':
-        return new Date(today.setMonth(today.getMonth() - 6)).toISOString().split('T')[0];
+        return today.subtract(6, 'month').format('YYYY-MM-DD');
       case '1Y':
-        return new Date(today.setFullYear(today.getFullYear() - 1)).toISOString().split('T')[0];
+        return today.subtract(1, 'year').format('YYYY-MM-DD');
       case '2Y':
-        return new Date(today.setFullYear(today.getFullYear() - 2)).toISOString().split('T')[0];
+        return today.subtract(2, 'year').format('YYYY-MM-DD');
       default:
-        return today.toISOString().split('T')[0];
+        return today.format('YYYY-MM-DD');
     }
   }
 
