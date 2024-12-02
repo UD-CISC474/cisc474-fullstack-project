@@ -31,12 +31,11 @@ export class DashboardComponent {
 
   ngOnInit(): void {
     let yesterday: string;
-    if (dayjs().day().toString() === 'Monday') {
+    if (dayjs().day().toString() === '1') {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
     } else {
       yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
-
     this.getIndicesValue(yesterday);
   }
 
@@ -45,8 +44,8 @@ export class DashboardComponent {
       this.dashboardService.getIndices(date)
     );
 
-    if (apiResponse.success && apiResponse.response) {
-      const response = apiResponse.response;
+    if (apiResponse.success && apiResponse) {
+      const response = apiResponse.data;
       this.nasdaqValue = Number(Number(response.nasdaq?.close).toFixed(2));
     } else {
       console.error('Failed to fetch indices data:', apiResponse.message);

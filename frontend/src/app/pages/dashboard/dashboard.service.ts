@@ -10,7 +10,7 @@ export class DashboardService {
 
   getIndices(date: string): Observable<any> {
     const params = new HttpParams().set('date', date);
-    const apiUrl = 'http://localhost:3000/api/polygon/indices';
+    const apiUrl = 'http://localhost:3000/api/index';
     return this.http.get(apiUrl, { params });
   }
 }

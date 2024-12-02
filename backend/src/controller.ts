@@ -1,6 +1,6 @@
 import express from "express";
 import { database } from "./firebase";
-import { queryCompanyData, queryTickers } from "./polygon";
+import { queryCompanyData, queryIndex, queryTickers } from "./polygon";
 import {
   getAuthentication,
   login as authLogin,
@@ -68,6 +68,45 @@ const queryAllTickers = async (req: Req, res: Res): Promise<void> => {
   }
 };
 
+const getIndex = async (req: Req, res: Res): Promise<void> => {
+  try {
+    const { date } = req.query;
+    console.log(date);
+
+    if (!date) {
+      res.status(400).send({
+        success: false,
+        message: "Missing required field: date",
+      });
+      return;
+    }
+
+    const response = await queryIndex(date.toString());
+    console.log(response);
+    if (!response) {
+      res.status(400).send({
+        success: false,
+        message: "No response for the given date.",
+      });
+      return;
+    }
+
+    res.send({
+      success: true,
+      message: "Index fetched successfully!",
+      data: response,
+    });
+  } catch (error) {
+    const err = error as Error;
+    console.error("Error fetching index data:", err.message);
+    res.status(500).send({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};
+
 // Express route for getting all information about a user's portfolio
 const getPortfolio = async (req: Req, res: Res): Promise<void> => {};
 
@@ -123,4 +162,5 @@ export {
   createAccount,
   testFirebase,
   testTokenAuth,
+  getIndex,
 };

@@ -46,6 +46,20 @@ interface TickerResponse {
   status: string;
 }
 
+interface IndexData {
+  symbol: string;
+  date: string;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
+  volume: number;
+}
+
+interface IndexResponse {
+  nasdaq: IndexData;
+}
+
 // Used for scamming polygon to bypass 5 request/minute rate limit
 class PolygonKeyGen {
   private currentKey = 0;
@@ -175,4 +189,31 @@ const queryTickers = async (date: string): Promise<TickerResponse> => {
   }
 };
 
-export { queryCompanyData, queryTickers };
+const queryIndex = async (date: string): Promise<IndexResponse> => {
+  const nasdaq_response = await fetch(
+    `https://api.polygon.io/v1/open-close/I:COMP/${date}`,
+    {
+      headers: {
+        Authorization: `Bearer ${polyKeyGen.key}`,
+      },
+    }
+  );
+
+  const nasdaq_res = await nasdaq_response.json();
+
+  const formatResponse = (data: any): IndexData => ({
+    symbol: data.symbol,
+    date: data.from,
+    open: data.open,
+    close: data.close,
+    high: data.high,
+    low: data.low,
+    volume: data.volume,
+  });
+
+  return {
+    nasdaq: formatResponse(nasdaq_res),
+  };
+};
+
+export { queryCompanyData, queryTickers, queryIndex };

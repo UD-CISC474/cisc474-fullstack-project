@@ -10,6 +10,7 @@ import {
   testTokenAuth,
   createAccount,
   queryAllTickers,
+  getIndex,
 } from "./controller";
 
 export class ApiRouter {
@@ -23,6 +24,9 @@ export class ApiRouter {
     this.router.get("/stock/:ticker/:start", getStock);
     this.router.get("/stock/:ticker/:start/:end", getStock);
     this.router.get("/stock", queryAllTickers);
+
+    // get valuation for nasdaq
+    this.router.get("/index", getIndex);
 
     // User sign-in
     this.router.post("/login", login);
