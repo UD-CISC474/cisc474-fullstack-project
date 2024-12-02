@@ -53,7 +53,6 @@ interface IndexData {
   close: number;
   high: number;
   low: number;
-  volume: number;
 }
 
 interface IndexResponse {
@@ -208,7 +207,6 @@ const queryIndex = async (date: string): Promise<IndexResponse> => {
     close: data.close,
     high: data.high,
     low: data.low,
-    volume: data.volume,
   });
 
   return {
