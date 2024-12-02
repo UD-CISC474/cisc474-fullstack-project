@@ -18,6 +18,8 @@ export class ApiRouter {
     this.router.get("/user/stock", this.controller.getUserStock);
     this.router.put("/user/stock", this.controller.updateUserStock);
     this.router.get("/company-data", this.controller.getCompanyData);
+    this.router.get("/polygon/indices", this.controller.queryIndicesExpress);
+    this.router.get("/polygon/all", this.controller.queryAllTickers);
     return this.router;
   }
 }

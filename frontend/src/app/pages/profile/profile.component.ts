@@ -12,7 +12,10 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import {
   Auth,
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  setPersistence,
   signInWithEmailAndPassword,
 } from '@angular/fire/auth';
 import { Database, ref, set } from '@angular/fire/database';
@@ -58,6 +61,16 @@ export class ProfileComponent {
     private db: Database,
     private router: Router
   ) {
+    // Listen for authentication state changes
+    onAuthStateChanged(this.auth, (user) => {
+      if (user) {
+        console.log('User is authenticated:', user);
+        this.router.navigate(['/dashboard']); // Navigate to dashboard if authenticated
+      } else {
+        console.log('No user authenticated');
+      }
+    });
+
     // Listen for changes in confirmPassword to validate password matching
     merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
       .pipe(takeUntilDestroyed())
