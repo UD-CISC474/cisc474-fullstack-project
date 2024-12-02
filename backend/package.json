@@ -11,11 +11,12 @@
   "description": "",
   "dependencies": {
     "@angular/fire": "^18.0.1",
-    "dotenv": "^16.4.5",
+    "bcrypt": "^5.1.1",
     "express": "^4.21.0",
     "firebase-admin": "^12.7.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.21"
   }
 }

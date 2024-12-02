@@ -1,5 +1,3 @@
-import { environment } from "./environment";
-
 interface QueryParams {
   from?: Date | string;
   to?: Date | string;
@@ -20,6 +18,7 @@ interface Price {
 }
 
 interface CompanyResponse {
+  successful: boolean;
   ticker: string;
   count: number;
   start: Date;
@@ -27,45 +26,32 @@ interface CompanyResponse {
   prices: Price[];
 }
 
-interface PortfolioResponse {}
+// Used for scamming polygon to bypass 5 request/minute rate limit
+class PolygonKeyGen {
+  private currentKey = 0;
+  private keys = [
+    "EYZvJp3byO1Jqo3yZd_02qSBfJZHzdGK",
+    "XqNuRVfD2O1aqFmQP_xbGNPhm3N7JoFb",
+    "RBXeBQsYN5zMUkB11JVh58x3WSMLvwcc",
+    "bgR_CQpWzfcb7taTmCgofuNCVBdR4RNh",
+    "OJCgCDXeFXdg7Sugxmqlhptz_WOr0YRi",
+    "Y2SOnSuTA8qAkpqcSjEvk6HPfLfbmTHO",
+    "sDpnXwmj8JfLzfIOjPXfz61u4mT6ukWZ",
+    "cu08jnknbBkKgqh6c_bPMDEOTeBKHLoi",
+    "AIA4C6X1E8K4OYBm251tnXyCpumv_LCI",
+    "PkKi7nu09KgdMb8Fa9Nn76fJz_0J2M_0"
+  ];
 
-interface TickerResult {
-  T: string; // Ticker symbol
-  c: number; // Close price
-  h: number; // High price
-  l: number; // Low price
-  n: number; // Number of trades
-  o: number; // Open price
-  t: number; // Timestamp
-  v: number; // Volume
-  vw: number; // Volume weighted average price
+  public get key(): string {
+    const key = this.keys[this.currentKey];
+    this.currentKey = (this.currentKey + 1) % this.keys.length;
+    return key;
+  }
 }
+const polyKeyGen = new PolygonKeyGen();
 
-interface TickerResponse {
-  adjusted: boolean;
-  queryCount: number;
-  results: TickerResult[];
-  resultsCount: number;
-  status: string;
-}
-
-interface IndexData {
-  symbol: string;
-  date: string;
-  open: number;
-  close: number;
-  high: number;
-  low: number;
-  volume: number;
-}
-
-interface IndicesResponse {
-  nasdaq: IndexData;
-}
-
-const POLYGON_API_KEY = environment.POLYGON_API_KEY || "";
-
-const queryCompanyDataNoCache = async ({
+// Directly queries Polygon API for price information about a company/stock
+const queryCompanyData = async ({
   ticker,
   from = new Date().toISOString().substring(0, 10),
   to = new Date().toISOString().substring(0, 10),
@@ -78,18 +64,20 @@ const queryCompanyDataNoCache = async ({
     `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}`,
     {
       headers: {
-        Authorization: `Bearer ${POLYGON_API_KEY}`,
+        Authorization: `Bearer ${polyKeyGen.key}`,
       },
     }
   )
     .then((res) => res.json())
     .then((res) => {
+      const successful = res.resultsCount && res.resultsCount > 0;
       return {
+        successful: successful ? true : false,
         ticker,
-        count: res.resultsCount,
+        count: successful ? res.resultsCount : 0,
         start: new Date(from),
         end: new Date(to),
-        prices: res.results.map(
+        prices: successful ? res.results.map(
           (e: {
             c: number; // close
             h: number; // high
@@ -107,81 +95,13 @@ const queryCompanyDataNoCache = async ({
               openTimestamp: e.t,
             };
           }
-        ),
+        ) : [],
       };
     });
 
   return data;
 };
 
-const queryCompanyData = async ({
-  ticker,
-  from = new Date().toISOString().substring(0, 10),
-  to = new Date().toISOString().substring(0, 10),
-  interval = "half-hour",
-}: CompanyQueryParams): Promise<CompanyResponse> => {
-  // TODO: Check firebase for company data before querying polygon
-  return queryCompanyDataNoCache({ ticker, from, to, interval });
-};
-
-const queryPortfolio = async ({}: QueryParams) => {};
-
-// TODO: Figure out a way to list stocks for the current day. When the current day is input, this response is given:
-//{"status":"NOT_AUTHORIZED","request_id":"889c5f07cc40f464b68f8a87098b170e","message":"Attempted to request today's data before end of day. Please upgrade your plan at https://polygon.io/pricing"}
-const queryTickers = async (date: string): Promise<TickerResponse> => {
-  const response = await fetch(
-    `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${date}?adjusted=true&apiKey=${POLYGON_API_KEY}`
-  );
-
-  const res = await response.json();
-  return {
-    adjusted: res.adjusted,
-    queryCount: res.queryCount,
-    results: res.results.map((ticker: any) => ({
-      T: ticker.T,
-      c: ticker.c,
-      h: ticker.h,
-      l: ticker.l,
-      n: ticker.n,
-      o: ticker.o,
-      t: ticker.t,
-      v: ticker.v,
-      vw: ticker.vw,
-    })),
-    resultsCount: res.resultsCount,
-    status: res.status,
-  };
-};
-
-const queryIndices = async (date: string): Promise<IndicesResponse> => {
-  const nasdaq_response = await fetch(
-    `https://api.polygon.io/v1/open-close/I:COMP/${date}?apiKey=${POLYGON_API_KEY}`
-  );
-
-  const nasdaq_res = await nasdaq_response.json();
-
-  console.log(nasdaq_res);
-
-  const formatResponse = (data: any): IndexData => ({
-    symbol: data.symbol,
-    date: data.from,
-    open: data.open,
-    close: data.close,
-    high: data.high,
-    low: data.low,
-    volume: data.volume,
-  });
-
-  return {
-    nasdaq: formatResponse(nasdaq_res),
-  };
-};
-
 export {
   queryCompanyData,
-  queryCompanyDataNoCache,
-  queryPortfolio,
-  queryTickers,
-  queryIndices,
 };
-export type { TickerResult, TickerResponse };

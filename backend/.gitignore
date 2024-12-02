@@ -3,3 +3,5 @@ build
 *.DS_Store
 .env
 environment.ts
+firebase-service-account.json
+polygon-credentials.json

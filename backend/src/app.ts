@@ -1,6 +1,5 @@
 import express from "express";
 import { ApiRouter } from "./router";
-import * as dotenv from "dotenv";
 
 class Application {
   public app: express.Application;
@@ -56,7 +55,5 @@ class Application {
     this.app.use("/api", new ApiRouter().getRouter());
   }
 }
-
-dotenv.config();
 
 new Application().start();
