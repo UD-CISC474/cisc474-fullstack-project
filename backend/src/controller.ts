@@ -1,6 +1,7 @@
 import express from "express";
 import { database } from "./firebase";
 import { queryCompanyData } from "./polygon";
+import { getAuthentication, login as authLogin } from "./auth";
 
 
 // HELPER FUNCTIONS -- DO NOT EXPORT THESE
@@ -8,11 +9,6 @@ import { queryCompanyData } from "./polygon";
 // shorthand type aliases for express functions
 type Req = express.Request;
 type Res = express.Response;
-
-// Used by any express endpoints that need user authorization
-const getAuthentication = async () => {
-
-}
 
 // Used by buyStock & sellStock to execute trades
 const exchangeStock = async () => {
@@ -51,7 +47,9 @@ const sellStock = async (req: Req, res: Res): Promise<void> => {
 
 // Express route to sign-in a user
 const login = async (req: Req, res: Res): Promise<void> => {
-
+  const { username, password } = req.body;
+  const response = await authLogin({ username, password });
+  res.send(response);
 }
 
 // Test firebase route (can be deleted)
@@ -61,4 +59,11 @@ const testFirebase = async (req: Req, res: Res): Promise<void> => {
   res.send({ value });
 }
 
-export { getStock, getPortfolio, buyStock, sellStock, login, testFirebase }
+// Test auth route (can be deleted)
+const testTokenAuth = async (req: Req, res: Res): Promise<void> => {
+  const { username, token } = req.params;
+  const response = await getAuthentication({ username, token });
+  res.send(response);
+}
+
+export { getStock, getPortfolio, buyStock, sellStock, login, testFirebase, testTokenAuth }

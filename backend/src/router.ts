@@ -5,7 +5,8 @@ import {
   buyStock,
   sellStock,
   login,
-  testFirebase
+  testFirebase,
+  testTokenAuth
 } from "./controller";
 
 export class ApiRouter {
@@ -32,8 +33,9 @@ export class ApiRouter {
     this.router.post("/buy", buyStock);
     this.router.post("/sell", sellStock);
 
-    // Test firebase route
+    // Test routes (can delete)
     this.router.get("/test-firebase", testFirebase);
+    this.router.get("/authtoken/:username/:token", testTokenAuth)
 
     return this.router;
   }

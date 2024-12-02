@@ -1,6 +1,3 @@
-// import { database } from "./firebase";
-// import { token as POLYGON_API_KEY } from "../polygon-credentials.json";
-
 interface QueryParams {
   from?: Date | string;
   to?: Date | string;
@@ -22,7 +19,6 @@ interface Price {
 
 interface CompanyResponse {
   successful: boolean;
-  cacheHit: boolean;
   ticker: string;
   count: number;
   start: Date;
@@ -77,7 +73,6 @@ const queryCompanyData = async ({
       const successful = res.resultsCount && res.resultsCount > 0;
       return {
         successful: successful ? true : false,
-        cacheHit: false,
         ticker,
         count: successful ? res.resultsCount : 0,
         start: new Date(from),
