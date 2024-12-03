@@ -10,20 +10,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  Auth,
-  browserLocalPersistence,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  setPersistence,
-  signInWithEmailAndPassword,
-} from '@angular/fire/auth';
-import { Database, ref, set } from '@angular/fire/database';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, signal } from '@angular/core';
 import { merge } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-profile',
@@ -55,22 +47,8 @@ export class ProfileComponent {
   signupPassword = new FormControl('', [Validators.required]);
   confirmPassword = new FormControl('', [Validators.required]);
 
-  // Constructor to inject Firebase Auth and Database services
-  constructor(
-    private auth: Auth,
-    private db: Database,
-    private router: Router
-  ) {
-    // Listen for authentication state changes
-    onAuthStateChanged(this.auth, (user) => {
-      if (user) {
-        console.log('User is authenticated:', user);
-        this.router.navigate(['/dashboard']); // Navigate to dashboard if authenticated
-      } else {
-        console.log('No user authenticated');
-      }
-    });
-
+  // Constructor to inject HttpClient, Router
+  constructor(private http: HttpClient, private router: Router) {
     // Listen for changes in confirmPassword to validate password matching
     merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
       .pipe(takeUntilDestroyed())
@@ -126,11 +104,22 @@ export class ProfileComponent {
     }
 
     try {
-      const email = `${this.loginUsername.value}@example.com`;
-      const password = this.loginPassword.value!;
-      await signInWithEmailAndPassword(this.auth, email, password);
-      console.log('User logged in successfully');
-      this.router.navigate(['/dashboard']);
+      const credentials = {
+        username: this.loginUsername.value,
+        password: this.loginPassword.value!,
+      };
+      const response = await this.http
+        .post<{ valid: boolean; token: string }>('http://localhost:3000/login', credentials)
+        .toPromise();
+
+      if (response?.valid) {
+        // Store the token in localStorage or any other preferred method
+        localStorage.setItem('authToken', response.token);
+        console.log('User logged in successfully');
+        this.router.navigate(['/dashboard']);
+      } else {
+        console.error('Invalid credentials');
+      }
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -156,24 +145,22 @@ export class ProfileComponent {
     }
 
     try {
-      const email = `${this.signupUsername.value}@example.com`;
-      const password = this.signupPassword.value!;
-      const userCredential = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
-
-      const userId = userCredential.user.uid;
-      // Store user information in Firebase Realtime Database
-      await set(ref(this.db, 'users/' + userId), {
+      const credentials = {
         username: this.signupUsername.value,
-        portfolio: {},
-        currency: 10000,
-      });
+        password: this.signupPassword.value!,
+      };
+      const response = await this.http
+        .post<{ valid: boolean; token: string; message?: string }>('http://localhost:3000/create-account', credentials)
+        .toPromise();
 
-      console.log('User signed up successfully');
-      this.router.navigate(['/dashboard']);
+      if (response?.valid) {
+        // Store the token in localStorage or any other preferred method
+        localStorage.setItem('authToken', response.token);
+        console.log('User signed up successfully');
+        this.router.navigate(['/dashboard']);
+      } else {
+        console.error('Sign-up failed:', response?.message);
+      }
     } catch (error) {
       console.error('Sign-up failed:', error);
     }

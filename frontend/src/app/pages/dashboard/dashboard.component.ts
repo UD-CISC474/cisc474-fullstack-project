@@ -4,7 +4,7 @@ import { MarketService } from '../market/market.service';
 import { DashboardService } from './dashboard.service';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import dayjs from 'dayjs';
-import { Stock } from '../../interfaces';
+//import { Stock } from '../../interfaces';
 import { lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -25,21 +25,10 @@ export class DashboardComponent {
   recentNews: string[] = ['NEWS', 'NEWS', 'NEWS', 'NEWS'];
 
   constructor(
-    private auth: Auth,
     private marketService: MarketService,
     private router: Router,
     private dashboardService: DashboardService
   ) {
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-        this.getPortfolioValue();
-      } else {
-        this.router.navigate(['/profile']);
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
   }
 
   ngOnInit(): void {
@@ -66,25 +55,25 @@ export class DashboardComponent {
     }
   }
 
-  async getPortfolioValue(): Promise<void> {
-    const response = await lastValueFrom(
-      this.marketService.getUserStocks(this.userId)
-    );
+  // async getPortfolioValue(): Promise<void> {
+  //   const response = await lastValueFrom(
+  //     this.marketService.getUserStocks(this.userId)
+  //   );
 
-    const userStocks: { [key: string]: Stock } = response.stocks;
-    const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
-      userStocks
-    ).map(([id, stock]) => ({
-      id,
-      stock,
-    }));
+  //   const userStocks: { [key: string]: Stock } = response.stocks;
+  //   const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
+  //     userStocks
+  //   ).map(([id, stock]) => ({
+  //     id,
+  //     stock,
+  //   }));
 
-    let totalValue = 0;
-    if (userStocksArray && userStocksArray.length > 0) {
-      userStocksArray.map(({ stock }) => {
-        totalValue += stock.price * stock.shares;
-      });
-    }
-    this.portfolioValue = Number(totalValue.toFixed(2));
-  }
+  //   let totalValue = 0;
+  //   if (userStocksArray && userStocksArray.length > 0) {
+  //     userStocksArray.map(({ stock }) => {
+  //       totalValue += stock.price * stock.shares;
+  //     });
+  //   }
+  //   this.portfolioValue = Number(totalValue.toFixed(2));
+  // }
 }
