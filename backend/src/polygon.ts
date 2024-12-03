@@ -50,11 +50,24 @@ class PolygonKeyGen {
 }
 const polyKeyGen = new PolygonKeyGen();
 
+// Returns the most recent week day that isn't today
+const getLastWeekday = (date?: Date): Date => {
+  date = date ? date : new Date(Date.now() - 86400000);
+  
+  if(date.getDay() === 0) {
+    date.setDate(date.getDate() - 2);
+  } else if(date.getDay() === 6) {
+    date.setDate(date.getDate() - 1);
+  }
+
+  return date;
+}
+
 // Directly queries Polygon API for price information about a company/stock
 const queryCompanyData = async ({
   ticker,
-  from = new Date().toISOString().substring(0, 10),
-  to = new Date().toISOString().substring(0, 10),
+  from = getLastWeekday().toISOString().substring(0, 10),
+  to = getLastWeekday().toISOString().substring(0, 10),
   interval = "half-hour",
 }: CompanyQueryParams): Promise<CompanyResponse> => {
   const timespan = interval === "half-hour" ? "minute" : interval;
