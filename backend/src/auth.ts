@@ -1,3 +1,4 @@
+import express from "express";
 import { compareSync, hashSync } from "bcrypt";
 import { randomBytes } from "crypto";
 import { database } from "./firebase";
@@ -20,10 +21,9 @@ interface AuthorizedUser {
 }
 
 // Used by any express endpoints that need user authorization
-const getAuthentication = ({
-  username,
-  token
-}: TokenCredentials): Promise<AuthorizedUser> => {
+const getAuthentication = (req: express.Request): Promise<AuthorizedUser> => {
+  const { username } = req.body;
+  const token = req.headers.authorization || "";
   return new Promise((resolve, reject) => {
 
     // Query the Firebase for the current token

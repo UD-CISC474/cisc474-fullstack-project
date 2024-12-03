@@ -29,17 +29,17 @@ export class ApiRouter {
     this.router.post("/create-account", createAccount);
 
     // Retireve user portfolio (start/end specify date range)
-    // Auth bearer token required
-    this.router.get("/portfolio", getPortfolio);
-    this.router.get("/portfolio/:start/:end", getPortfolio);
+    // Auth token required (hence why using post)
+    this.router.post("/portfolio", getPortfolio);
+    this.router.post("/portfolio/:start/:end", getPortfolio);
 
-    // Buy/sell stock (auth bearer token required)
+    // Buy/sell stock (auth token required)
     this.router.post("/buy", buyStock);
     this.router.post("/sell", sellStock);
 
     // Test routes (can delete)
     this.router.get("/test-firebase", testFirebase);
-    this.router.get("/authtoken/:username/:token", testTokenAuth)
+    this.router.post("/authtoken/", testTokenAuth)
 
     return this.router;
   }
