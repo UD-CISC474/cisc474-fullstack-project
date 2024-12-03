@@ -25,8 +25,8 @@
         (keyup.enter)="selectTicker(ticker)"
         role="button"
       >
-        <span class="stock-name">{{ ticker.T }}</span>
-        <span class="stock-price">{{ ticker.c }} STC</span>
+        <span class="stock-name">{{ ticker.ticker }}</span>
+        <span class="stock-price">{{ ticker.prices?.[0]?.close || "Loading" }} STC</span>
       </div>
       <div *ngIf="paginatedTickers.length === 0" class="no-results">
         No stocks found.
@@ -60,20 +60,11 @@
     <div class="graph-content">
       <!-- Selected Stock Details -->
       <div class="graph-header">
-        <h3>{{ selectedTicker?.T || "Select a Stock" }}</h3>
+        <h3>{{ selectedTicker?.ticker || "Select a Stock" }}</h3>
         <p>
           Current Price:
-          <span> {{ selectedTicker?.c || "Loading" }} STC </span>
+          <span> {{ selectedTicker?.prices?.[0]?.close || "Loading" }} STC </span>
         </p>
-        <p>
-          You own:
-          <span>{{ selectedTicker?.us || "0" }}</span>
-          <span> shares, totaling to </span>
-          <span> {{ selectedTicker?.uv || "0" }} STC </span>
-        </p>
-        <ng-template #noSelection>
-          <span>Loading...</span>
-        </ng-template>
 
         <!-- Stock Purchase Section -->
         <div class="purchase-controls">
@@ -107,6 +98,7 @@
             </button>
             <button
               (click)="sellStock(amount)"
+              [disabled]="!selectedTicker || amount <= 0"
               aria-label="Sell selected stock"
             >
               Sell
