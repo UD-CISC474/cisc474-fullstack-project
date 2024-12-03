@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { MarketService } from './market.service';
-import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { MatIcon } from '@angular/material/icon';
-import { SelectedTicker, Stock } from '../../interfaces';
+import { CompanyResponse, SelectedTicker, Stock } from '../../interfaces';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -18,35 +16,21 @@ import { Router } from '@angular/router';
   imports: [NgFor, FormsModule, NgIf, MatIcon],
 })
 export class MarketComponent implements OnInit {
-  tickers: TickerResult[] = [];
-  filteredTickers: TickerResult[] = [];
+  tickers: CompanyResponse[] = [];
+  filteredTickers: CompanyResponse[] = [];
   searchQuery: string = '';
   selectedTicker: SelectedTicker | null = null;
   currentPage: number = 1;
   itemsPerPage: number = 50;
   totalPages: number = 0;
-  paginatedTickers: TickerResult[] = [];
+  paginatedTickers: CompanyResponse[] = [];
 
   userId: string = 'default-user';
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
 
-  constructor(
-    public auth: Auth,
-    private marketService: MarketService,
-    private router: Router
-  ) {
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-      } else {
-        this.router.navigate(['/profile']);
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
-  }
+  constructor(private marketService: MarketService, private router: Router) {}
 
   ngOnInit(): void {
     console.log(this.userId);
@@ -74,15 +58,12 @@ export class MarketComponent implements OnInit {
         this.tickers = tickers;
 
         this.selectedTicker = {
-          T: this.tickers[0].T,
-          c: this.tickers[0].c,
-          h: this.tickers[0].h,
-          l: this.tickers[0].l,
-          n: this.tickers[0].n,
-          o: this.tickers[0].o,
-          t: this.tickers[0].t,
-          v: this.tickers[0].v,
-          vw: this.tickers[0].vw,
+          T: this.tickers[0].ticker,
+          c: this.tickers[0].prices[0].close,
+          h: this.tickers[0].prices[0].high,
+          l: this.tickers[0].prices[0].low,
+          o: this.tickers[0].prices[0].open,
+          t: this.tickers[0].prices[0].openTimestamp,
           uv: 0,
           us: 0,
         };
@@ -162,7 +143,7 @@ export class MarketComponent implements OnInit {
       console.log('Currency Update Response:', updateResponse);
 
       await this.updateSelectedTickerValue();
-      this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker.T}!`;
+      this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker.t}!`;
     } catch (error) {
       this.purchaseMessage = 'Failed to purchase stock. Please try again.';
       console.error('Purchase Error:', error);
@@ -300,17 +281,14 @@ export class MarketComponent implements OnInit {
     }
   }
 
-  async selectTicker(ticker: TickerResult): Promise<void> {
+  async selectTicker(ticker: CompanyResponse): Promise<void> {
     this.selectedTicker = {
-      T: ticker.T,
-      c: ticker.c,
-      h: ticker.h,
-      l: ticker.l,
-      n: ticker.n,
-      o: ticker.o,
-      t: ticker.t,
-      v: ticker.v,
-      vw: ticker.vw,
+      T: ticker.ticker,
+      c: ticker.prices[0].close,
+      h: ticker.prices[0].high,
+      l: ticker.prices[0].low,
+      o: ticker.prices[0].open,
+      t: ticker.prices[0].openTimestamp,
       uv: 0,
       us: 0,
     };
@@ -323,7 +301,7 @@ export class MarketComponent implements OnInit {
   filterTickers(): void {
     const query = this.searchQuery.toLowerCase().trim();
     this.filteredTickers = this.tickers.filter((ticker) =>
-      ticker.T.toLowerCase().includes(query)
+      ticker.ticker.toLowerCase().includes(query)
     );
     this.currentPage = 1;
     this.updatePagination();

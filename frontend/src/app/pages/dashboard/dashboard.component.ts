@@ -30,16 +30,7 @@ export class DashboardComponent {
     private router: Router,
     private dashboardService: DashboardService
   ) {
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-        this.getPortfolioValue();
-      } else {
-        this.router.navigate(['/profile']);
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
+    //this.getPortfolioValue();
   }
 
   ngOnInit(): void {
