@@ -10,15 +10,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  Auth,
-  browserLocalPersistence,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  setPersistence,
-  signInWithEmailAndPassword,
-} from '@angular/fire/auth';
-import { Database, ref, set } from '@angular/fire/database';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, signal } from '@angular/core';
 import { merge } from 'rxjs';
@@ -56,21 +47,7 @@ export class ProfileComponent {
   confirmPassword = new FormControl('', [Validators.required]);
 
   // Constructor to inject Firebase Auth and Database services
-  constructor(
-    private auth: Auth,
-    private db: Database,
-    private router: Router
-  ) {
-    // Listen for authentication state changes
-    onAuthStateChanged(this.auth, (user) => {
-      if (user) {
-        console.log('User is authenticated:', user);
-        this.router.navigate(['/dashboard']); // Navigate to dashboard if authenticated
-      } else {
-        console.log('No user authenticated');
-      }
-    });
-
+  constructor(private router: Router) {
     // Listen for changes in confirmPassword to validate password matching
     merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
       .pipe(takeUntilDestroyed())
@@ -126,10 +103,18 @@ export class ProfileComponent {
     }
 
     try {
-      const email = `${this.loginUsername.value}@example.com`;
+      const headers = new Headers();
+      headers.append('Content-Type', 'application/json');
+
+      const username = `${this.loginUsername.value}`;
       const password = this.loginPassword.value!;
-      await signInWithEmailAndPassword(this.auth, email, password);
-      console.log('User logged in successfully');
+
+      const response = await fetch('http://localhost:3000/api/login', {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+
       this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Login failed:', error);
@@ -156,21 +141,19 @@ export class ProfileComponent {
     }
 
     try {
-      const email = `${this.signupUsername.value}@example.com`;
-      const password = this.signupPassword.value!;
-      const userCredential = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
+      const headers = new Headers();
+      headers.append('Content-Type', 'application/json');
 
-      const userId = userCredential.user.uid;
-      // Store user information in Firebase Realtime Database
-      await set(ref(this.db, 'users/' + userId), {
-        username: this.signupUsername.value,
-        portfolio: {},
-        currency: 10000,
+      const username = `${this.signupUsername.value}`;
+      const password = this.signupPassword.value!;
+
+      const response = await fetch('http://localhost:3000/api/create-account', {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
       });
+
+      console.log(response);
 
       console.log('User signed up successfully');
       this.router.navigate(['/dashboard']);

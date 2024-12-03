@@ -4,7 +4,7 @@ import { MarketComponent } from './pages/market/market.component';
 
 export const routes: Routes = [
   // change redirect to /profile when auth is integrated
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: '/profile', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   {
     path: 'profile',
