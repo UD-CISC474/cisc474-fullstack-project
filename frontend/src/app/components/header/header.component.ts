@@ -45,4 +45,13 @@ export class HeaderComponent implements OnInit {
     // this.selectedIndex = 3;
     this.router.navigate(['/profile']);
   }
+
+  async onLogout() {
+    try {
+      await fetch('http://localhost:3000/api/logout', { method: 'POST' });
+      this.router.navigate(['/profile']);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
