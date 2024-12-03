@@ -25,8 +25,8 @@
         (keyup.enter)="selectTicker(ticker)"
         role="button"
       >
-        <span class="stock-name">{{ ticker.T }}</span>
-        <span class="stock-price">{{ ticker.c }} STC</span>
+        <span class="stock-name">{{ ticker.ticker }}</span>
+        <span class="stock-price">{{ ticker.prices[0].close }} STC</span>
       </div>
       <div *ngIf="paginatedTickers.length === 0" class="no-results">
         No stocks found.

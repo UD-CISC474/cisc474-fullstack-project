@@ -3,7 +3,6 @@ import { MarketService } from './market.service';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { MatIcon } from '@angular/material/icon';
 import { CompanyResponse, SelectedTicker, Stock } from '../../interfaces';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
@@ -31,21 +30,7 @@ export class MarketComponent implements OnInit {
   purchaseMessage: string = '';
   sellMessage: string = '';
 
-  constructor(
-    public auth: Auth,
-    private marketService: MarketService,
-    private router: Router
-  ) {
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid;
-        console.log(`Authenticated user: ${this.userId}`);
-      } else {
-        this.router.navigate(['/profile']);
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
-  }
+  constructor(private marketService: MarketService, private router: Router) {}
 
   ngOnInit(): void {
     console.log(this.userId);
