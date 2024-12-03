@@ -37,17 +37,19 @@ const getStock = async (req: Req, res: Res): Promise<void> => {
 
 // Express route for getting all information about a user's portfolio
 const getPortfolio = async (req: Req, res: Res): Promise<void> => {
+  const { username, token, valid } = await getAuthentication(req);
 
+  res.send(`Token is: ${token}; Username is: ${username}`);
 }
 
 // Express route for purchasing a stock
 const buyStock = async (req: Req, res: Res): Promise<void> => {
-
+  const { username, token, valid } = await getAuthentication(req);
 }
 
 // Express route for selling a stock
 const sellStock = async (req: Req, res: Res): Promise<void> => {
-
+  const { username, token, valid } = await getAuthentication(req);
 }
 
 // Express route to sign-in a user
@@ -58,10 +60,17 @@ const login = async (req: Req, res: Res): Promise<void> => {
 }
 
 // Express route to logout a user
-const logout = (req: Req, res: Res): void => {
-  const { username, token } = req.body;
-  const response = authLogout({ username, token });
-  res.send(response);
+const logout = async (req: Req, res: Res): Promise<void> => {
+  const auth = await getAuthentication(req);
+  if(auth.valid === true) {
+    const response = authLogout({
+      username: auth.username,
+      token: auth.token
+    });
+    res.send(response);
+  } else {
+    res.send(auth);
+  }
 }
 
 // Express route to create a new user
@@ -80,8 +89,7 @@ const testFirebase = async (req: Req, res: Res): Promise<void> => {
 
 // Test auth route (can be deleted)
 const testTokenAuth = async (req: Req, res: Res): Promise<void> => {
-  const { username, token } = req.params;
-  const response = await getAuthentication({ username, token });
+  const response = await getAuthentication(req);
   res.send(response);
 }
 
