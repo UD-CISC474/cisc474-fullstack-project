@@ -38,7 +38,7 @@
     }
   }
 
-  &>div {
+  & > div {
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 8px;
@@ -150,7 +150,7 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
-        margin:5px;
+        margin: 5px;
 
         &:hover {
           background-color: #43a047;
@@ -184,18 +184,16 @@
 
         &:hover {
           background-color: rgba(0, 0, 0, 0.1);
-          ;
         }
 
         &:active {
           background-color: rgba(0, 0, 0, 0.1);
-          ;
           transform: scale(0.98);
         }
 
         &:disabled {
           background-color: initial;
-          color:lightgray;
+          color: lightgray;
         }
       }
 
@@ -212,7 +210,7 @@
     flex-direction: column;
     gap: 15px;
 
-    &>div {
+    & > div {
       padding: 15px;
       background-color: #f9f9f9;
       border-radius: 8px;
@@ -269,7 +267,6 @@
 
     &:hover:not(:disabled) {
       background-color: rgba(0, 0, 0, 0.1);
-      ;
     }
   }
 
