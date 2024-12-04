@@ -10,13 +10,12 @@
         class="search-bar"
         placeholder="Search for a ticker..."
         [(ngModel)]="searchQuery"
-        (input)="
-          searchQuery = searchQuery.toUpperCase();
-          searchTicker(searchQuery);
-          clearStocks(searchQuery)
-        "
+        (input)="searchQuery = searchQuery.toUpperCase(); clearStocks(searchQuery)"
         aria-label="Search for a stock ticker"
       />
+      <button (click)="searchTicker(searchQuery)" aria-label="Search Stock">
+        Search
+      </button>
     </div>
 
     <!-- Stock List -->
@@ -45,12 +44,6 @@
           Current Price:
           <span> {{ selectedTicker.prices[0].close || "Loading" }} STC </span>
         </p>
-        <!-- <p>
-          You own:
-          <span>{{ selectedTicker?.us || "0" }}</span>
-          <span> shares, totaling to </span>
-          <span> {{ selectedTicker?.uv || "0" }} STC </span>
-        </p> -->
         <ng-template #noSelection>
           <span>Loading...</span>
         </ng-template>
@@ -87,6 +80,7 @@
             </button>
             <button
               (click)="sellStock(amount)"
+              [disabled]="!selectedTicker || amount <= 0"
               aria-label="Sell selected stock"
             >
               Sell
