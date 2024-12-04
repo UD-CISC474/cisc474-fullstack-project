@@ -14,52 +14,6 @@ import {
 type Req = express.Request;
 type Res = express.Response;
 
-// const createAccount = ({
-//   username,
-//   password,
-// }: AuthCredentials): Promise<AuthorizedUser> => {
-//   return new Promise((resolve, reject) => {
-//     // check if the username exists in the Firebase
-//     const ref = database.ref(`/users/${username}`);
-//     ref.once("value", (snap) => {
-//       // const existingUser = snap.val();
-
-//       if (snap.exists()) {
-//         // user already exists
-//         resolve({
-//           username,
-//           token: "",
-//           valid: false,
-//           message: "User already exists.",
-//         });
-//         return;
-//       }
-
-//       if (password.length < 4) {
-//         // provided password is too short
-//         resolve({
-//           username,
-//           token: "",
-//           valid: false,
-//           message: "Password too short.",
-//         });
-//       }
-
-//       const passwordHash = hashSync(password, 8);
-//       const token = randomBytes(32).toString("base64");
-//       ref.set({
-//         token,
-//         password: passwordHash,
-//         portfolio: {
-//           cash: 10000,
-//         },
-//       });
-
-//       resolve({ username, token, valid: true });
-//     });
-//   });
-// };
-
 // Used by buyStock & sellStock to execute trades
 const exchangeStock = async ({
   username,
