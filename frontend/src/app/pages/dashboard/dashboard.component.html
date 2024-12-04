@@ -1,11 +1,42 @@
+<div class="dashboard-container">
+  <mat-grid-list
+    cols="4"
+    rowHeight="250px"
+    gutterSize="10px"
+    class="dashboard-grid"
+  >
+    <!-- NASDAQ Composite -->
+    <mat-grid-tile [colspan]="4" [rowspan]="1" class="nasdaq-tile">
+      NASDAQ Composite: {{ nasdaqValue }} STC
+    </mat-grid-tile>
 
-<div class="container">
-    <mat-grid-list cols="3" rowHeight="250px" gutterSize="10px">
-    @for (tile of tiles; track tile) {
-      <mat-grid-tile
-        [colspan]="tile.cols"
-        [rowspan]="tile.rows"
-        [style.background]="tile.color">{{tile.text}}</mat-grid-tile>
-    }
+    <!-- Portfolio Value -->
+    <mat-grid-tile [colspan]="4" [rowspan]="1" class="portfolio-value-tile">
+      Portfolio Value: {{ portfolioValue }} STC
+      <br />
+      Insert percent change:
+      <br />
+      Insert change in dollars:
+    </mat-grid-tile>
+
+    <!-- Highest Earner -->
+    <mat-grid-tile [colspan]="2" [rowspan]="1" class="highest-earner-tile">
+      Highest Earner:
+    </mat-grid-tile>
+
+    <!-- Biggest Loser -->
+    <mat-grid-tile [colspan]="2" [rowspan]="1" class="biggest-loser-tile">
+      Biggest Loser:
+    </mat-grid-tile>
+
+    <!-- Recent News -->
+    <mat-grid-tile
+      *ngFor="let news of recentNews"
+      [colspan]="1"
+      [rowspan]="1"
+      class="news-tile"
+    >
+      {{ news }}
+    </mat-grid-tile>
   </mat-grid-list>
 </div>

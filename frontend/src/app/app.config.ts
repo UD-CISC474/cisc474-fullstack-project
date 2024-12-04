@@ -3,10 +3,13 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { getAuth, provideAuth } from '@angular/fire/auth';
+import {
+  provideAuth,
+  initializeAuth,
+  browserLocalPersistence,
+} from '@angular/fire/auth';
 import { getDatabase, provideDatabase } from '@angular/fire/database';
-import { provideFirebaseApp } from '@angular/fire/app';
-import { initializeApp } from 'firebase/app';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { environment } from '../../../backend/src/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -16,7 +19,11 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideHttpClient(),
     provideFirebaseApp(() => initializeApp(environment.FIREBASE_CONFIG)),
-    provideAuth(() => getAuth()),
+    provideAuth(() =>
+      initializeAuth(initializeApp(environment.FIREBASE_CONFIG), {
+        persistence: browserLocalPersistence,
+      })
+    ),
     provideDatabase(() => getDatabase()),
   ],
 };

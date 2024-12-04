@@ -45,4 +45,31 @@ export class HeaderComponent implements OnInit {
     // this.selectedIndex = 3;
     this.router.navigate(['/profile']);
   }
+
+  async onLogout() {
+    try {
+      const username = localStorage.getItem('username');
+
+      const headers = new Headers();
+      headers.append('Content-Type', 'application/json');
+
+      const logoutResponse = await fetch('http://localhost:3000/api/logout', {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({ username }),
+      });
+
+      const logoutData = await logoutResponse.json();
+      if (logoutData.token === '') {
+        console.log('Logout succesful!');
+        localStorage.removeItem('username');
+        localStorage.removeItem('token');
+        this.router.navigate(['/profile']);
+      } else {
+        console.error('Logout unsuccessful. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }

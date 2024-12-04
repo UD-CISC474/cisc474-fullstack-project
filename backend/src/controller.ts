@@ -1,263 +1,106 @@
 import express from "express";
 import { database } from "./firebase";
-import { queryCompanyDataNoCache, queryTickers, TickerResult } from "./polygon";
+import { queryCompanyData } from "./polygon";
+import {
+  getAuthentication,
+  login as authLogin,
+  logout as authLogout,
+  createAccount as authCreateAccount
+} from "./auth";
 
-class MyObject {
-  constructor(public msg: string, public value: number = 42) {}
+
+// HELPER FUNCTIONS -- DO NOT EXPORT THESE
+
+// shorthand type aliases for express functions
+type Req = express.Request;
+type Res = express.Response;
+
+// Used by buyStock & sellStock to execute trades
+const exchangeStock = async () => {
+
 }
 
-export class Controller {
-  //returns something.
-  public getHello(req: express.Request, res: express.Response): void {
-    res.send(new MyObject("hello world"));
+
+
+// EXPRESS ROUTES -- EXPORT THESE
+
+// Express route for retrieving price information about a stock
+const getStock = async (req: Req, res: Res): Promise<void> => {
+  const { ticker, start, end } = req.params;
+  const stockData = await queryCompanyData({
+    ticker,
+    from: start,
+    to: end
+  });
+  res.send(stockData);
+}
+
+// Express route for getting all information about a user's portfolio
+const getPortfolio = async (req: Req, res: Res): Promise<void> => {
+  const { username, token, valid } = await getAuthentication(req);
+
+  res.send(`Token is: ${token}; Username is: ${username}`);
+}
+
+// Express route for purchasing a stock
+const buyStock = async (req: Req, res: Res): Promise<void> => {
+  const { username, token, valid } = await getAuthentication(req);
+}
+
+// Express route for selling a stock
+const sellStock = async (req: Req, res: Res): Promise<void> => {
+  const { username, token, valid } = await getAuthentication(req);
+}
+
+// Express route to sign-in a user
+const login = async (req: Req, res: Res): Promise<void> => {
+  const { username, password } = req.body;
+  const response = await authLogin({ username, password });
+  res.send(response);
+}
+
+// Express route to logout a user
+const logout = async (req: Req, res: Res): Promise<void> => {
+  const auth = await getAuthentication(req);
+  if(auth.valid === true) {
+    const response = authLogout({
+      username: auth.username,
+      token: auth.token
+    });
+    res.send(response);
+  } else {
+    res.send(auth);
   }
+}
 
-  //returns whatever you post to it.  You can use the contents of req.body to extract information being sent to the server
-  public postHello(req: express.Request, res: express.Response): void {
-    res.send({ body: req.body });
-  }
+// Express route to create a new user
+const createAccount = async (req: Req, res: Res): Promise<void> => {
+  const { username, password } = req.body;
+  const response = await authCreateAccount({ username, password });
+  res.send(response);
+}
 
-  public async firebaseTest(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    const ref = database.ref("/test-key");
-    const value = (await ref.get()).val();
-    res.send({ value });
-  }
+// Test firebase route (can be deleted)
+const testFirebase = async (req: Req, res: Res): Promise<void> => {
+  const ref = database.ref("/test");
+  const value = (await ref.get()).val();
+  res.send({ value });
+}
 
-  public async postFirebase(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      const ref = database.ref("/Apple");
-      const message = req.body.message;
-      await ref.set({
-        message: message,
-        timestamp: new Date().toISOString(),
-      });
-      res.send({ success: true, message: "Posted to Firebase!" });
-    } catch (error) {
-      const err = error as Error;
-      console.log("Error posting to Firebase: ", err);
-      res.status(500).send({ success: false, error: err.message });
-    }
-  }
+// Test auth route (can be deleted)
+const testTokenAuth = async (req: Req, res: Res): Promise<void> => {
+  const response = await getAuthentication(req);
+  res.send(response);
+}
 
-  public async stockTest(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      // Extract parameters from the request body, with defaults
-      const ticker = req.body.ticker || "AAPL"; // Default to "AAPL"
-      const from = req.body.from || "2024-11-11"; // Default to "2024-11-10"
-      const to = req.body.to || "2024-11-15"; // Default to "2024-11-15"
-      const interval = req.body.interval || "day"; // Default to "day"
-
-      // Fetch stock data
-      const result = await queryCompanyDataNoCache({
-        ticker,
-        from,
-        to,
-        interval,
-      });
-
-      // Write data to Firebase
-      const ref = database.ref(`/stocks/${ticker}`);
-      await ref.set({ data: result });
-
-      // Send success response
-      res.send({
-        success: true,
-        message: `Posted ${ticker} stock data to Firebase!`,
-      });
-    } catch (error) {
-      const err = error as Error;
-      console.error("Error posting stocks to Firebase: ", err);
-      res.status(500).send({ success: false, error: err.message });
-    }
-  }
-
-  public async postAllStocks(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      const date = req.body.date || "2024-11-15";
-      const result = await queryTickers(date);
-      const sanitizedResults = result.results.map((ticker) => {
-        const sanitizedTicker: Record<string, any> = { ...ticker };
-        Object.keys(sanitizedTicker).forEach((key) => {
-          if (sanitizedTicker[key] === undefined) {
-            delete sanitizedTicker[key];
-          }
-        });
-        return sanitizedTicker as TickerResult;
-      });
-
-      const sanitizedResult = { ...result, results: sanitizedResults };
-
-      const ref = database.ref(`/all`);
-      await ref.set({ stocks: sanitizedResult });
-      res.send({ success: true, message: `Posted all stocks to the Firebase` });
-    } catch (error) {
-      const err = error as Error;
-      console.error("Error posting all stocks to Firebase: ", err);
-      res.status(500).send({ success: false, error: err.message });
-    }
-  }
-
-  public async getAllStocks(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      const ref = database.ref(`/all/stocks/results`);
-      const snapshot = await ref.once("value");
-      if (snapshot.exists()) {
-        const stockData = snapshot.val();
-        res.send({ success: true, data: stockData });
-      } else {
-        res
-          .status(404)
-          .send({ success: false, message: "No stock data found." });
-      }
-    } catch (error) {
-      const err = error as Error;
-      console.error("Error retrieving stock data:", err);
-      res.status(500).send({ success: false, error: err.message });
-    }
-  }
-
-  public async postUserStock(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      const { userId, stockSymbol, shares, price } = req.body;
-
-      if (!userId || !stockSymbol || !shares || !price) {
-        res.status(400).send({
-          success: false,
-          message:
-            "Missing required fields: userId, stockSymbol, shares, or price",
-        });
-      }
-
-      const ref = database.ref(`/users/${userId}/stocks`);
-
-      const stockPurchase = {
-        stockSymbol,
-        shares,
-        price,
-        timestamp: new Date().toISOString(),
-      };
-
-      await ref.push(stockPurchase);
-
-      res.send({
-        success: true,
-        message: "Stock purchase recorded successfully!",
-        stockPurchase,
-      });
-    } catch (error) {
-      const err = error as Error;
-      console.error("Error posting stock to Firebase: ", err);
-      res.status(500).send({ success: false, error: err.message });
-    }
-  }
-
-  public async getUserStock(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      const { userId } = req.query;
-
-      if (!userId) {
-        res.status(400).send({
-          success: false,
-          message: "Missing required field: userId",
-        });
-        return;
-      }
-
-      const ref = database.ref(`/users/${userId}/stocks`);
-      const stocksSnapshot = await ref.get();
-      const stocks = stocksSnapshot.val();
-
-      if (!stocks) {
-        res.status(404).send({
-          success: false,
-          message: "No stocks found for the given userId",
-        });
-        return;
-      }
-
-      res.send({
-        success: true,
-        message: "Stocks fetched successfully!",
-        stocks,
-      });
-    } catch (error) {
-      const err = error as Error;
-      console.error("Error fetching user stocks: ", err);
-      res.status(500).send({ success: false, error: err.message });
-    }
-  }
-
-  public async updateUserStock(
-    req: express.Request,
-    res: express.Response
-  ): Promise<void> {
-    try {
-      const { userId, stockSymbol, shares, price, stockId } = req.body;
-
-      if (!userId || !stockId || !stockSymbol || !price) {
-        res.status(400).send({
-          success: false,
-          message:
-            "Missing required fields: userId, stockId, stockSymbol, shares, or price",
-        });
-        return;
-      }
-
-      const ref = database.ref(`/users/${userId}/stocks/${stockId}`);
-
-      if (shares <= 0) {
-        await ref.remove();
-        res.status(200).send({
-          success: true,
-          message: "All shares sold, removing entry",
-        });
-        return;
-      }
-
-      const stockUpdate = {
-        stockSymbol,
-        shares,
-        price,
-        timestamp: new Date().toISOString(),
-      };
-
-      await ref.update(stockUpdate);
-
-      res.send({
-        success: true,
-        message: "Stock updated successfully!",
-        stockUpdate,
-      });
-    } catch (error) {
-      const err = error as Error;
-      console.error("Error updating stock in Firebase: ", err.message);
-
-      res.status(500).send({
-        success: false,
-        message: "Internal server error",
-        error: err.message,
-      });
-    }
-  }
+export {
+  getStock,
+  getPortfolio,
+  buyStock,
+  sellStock,
+  login,
+  logout,
+  createAccount,
+  testFirebase,
+  testTokenAuth
 }

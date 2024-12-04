@@ -1,76 +1,60 @@
 import { Component, OnInit } from '@angular/core';
 import { MarketService } from './market.service';
-import { TickerResult } from '../../../../../backend/src/polygon';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { getAuth, onAuthStateChanged, user, User } from '@angular/fire/auth';
-import { Observable } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
-
-interface Stock {
-  stockSymbol: string;
-  shares: number;
-  price: number;
-}
+import { CompanyResponse } from '../../interfaces';
+import { Router } from '@angular/router';
+import { GraphComponent } from '../../components/graph/graph.component';
+import { user } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-market',
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
   standalone: true,
-  imports: [NgFor, FormsModule, NgIf, MatIcon],
+  imports: [NgFor, FormsModule, MatIcon, GraphComponent],
 })
 export class MarketComponent implements OnInit {
-  tickers: TickerResult[] = [];
-  filteredTickers: TickerResult[] = [];
+  selectedTicker: CompanyResponse = {
+    successful: true,
+    ticker: '',
+    count: 0,
+    start: new Date(),
+    end: new Date(),
+    prices: [
+      {
+        average: 0,
+        close: 0,
+        high: 0,
+        low: 0,
+        open: 0,
+        openTimestamp: 0,
+      },
+    ],
+  };
   searchQuery: string = '';
-  selectedTicker: TickerResult | null = null;
-  currentPage: number = 1;
-  itemsPerPage: number = 50;
-  totalPages: number = 0;
-  paginatedTickers: TickerResult[] = [];
-
-  userId: string = 'default-user'; // Placeholder for user ID
+  userId: string = '';
+  sessionToken: string = '';
   amount: number = 1;
-  purchaseMessage: string = '';
-  sellMessage: string = '';
+  yesterday: string = '';
+  stocks: CompanyResponse[] = [];
 
-  constructor(private marketService: MarketService) {}
+  constructor(private marketService: MarketService, private router: Router) {}
 
   ngOnInit(): void {
-    let yesterday: string;
-    if (dayjs().day().toString() === 'Monday') {
-      yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
-    } else {
-      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+    const username = localStorage.getItem('username');
+    const token = localStorage.getItem('token');
+    if (username && token) {
+      this.userId = username;
+      this.sessionToken = token;
     }
 
-    this.loadTickers(yesterday);
-
-    const auth = getAuth();
-
-    // Listen for authentication state changes
-    onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        this.userId = user.uid; // Set authenticated user ID
-        console.log(`Authenticated user: ${this.userId}`);
-      } else {
-        console.log('No user authenticated. Using default-user.');
-      }
-    });
-  }
-
-  async loadTickers(date: string): Promise<void> {
-    try {
-      const tickerResponse = await this.marketService.getTickers(date);
-      this.tickers = tickerResponse.results;
-      this.selectedTicker = this.tickers[0];
-      this.filterTickers();
-    } catch (error) {
-      console.error(`Failed to load tickers`, error);
-      this.tickers = [];
-      this.filteredTickers = [];
+    if (dayjs().day().toString() === 'Monday') {
+      this.yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
+    } else {
+      this.yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
   }
 
@@ -85,125 +69,120 @@ export class MarketComponent implements OnInit {
   }
 
   updateGraphPeriod(period: string): void {
-    console.log(`Graph updated for period: ${period}`);
-    // Placeholder for graph update
+    let startDate = this.yesterday;
+    if (period === '5D') {
+      startDate = dayjs().subtract(5, 'day').format('YYYY-MM-DD');
+    } else if (period === '1M') {
+      startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
+    } else if (period === '6M') {
+      startDate = dayjs().subtract(180, 'day').format('YYYY-MM-DD');
+    } else if (period === '1Y') {
+      startDate = dayjs().subtract(365, 'day').format('YYYY-MM-DD');
+    } else if (period === '2Y') {
+      startDate = dayjs().subtract(730, 'day').format('YYYY-MM-DD');
+    }
+
+    this.searchTicker(this.selectedTicker.ticker, startDate)
+      .then((updatedStock) => {
+        if (updatedStock) {
+          this.selectedTicker = { ...updatedStock };
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to update graph period:', err);
+      });
   }
 
-  buyStock(amount: number): void {
-    if (!this.selectedTicker || amount <= 0) {
-      this.purchaseMessage = 'Please select a stock and enter a valid amount.';
-      return;
-    }
+  async buyStock(amount: number) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('Authentication', this.userId);
 
     const payload = {
-      userId: this.userId,
-      stockSymbol: this.selectedTicker.T,
-      shares: amount,
-      price: this.selectedTicker.c,
+      ticker: this.selectedTicker.ticker,
+      price: this.selectedTicker.prices[0].close,
+      amount: amount,
+      type: 'buy',
     };
 
-    this.marketService.purchaseStock(payload).subscribe({
-      next: (response) => {
-        this.purchaseMessage = `Successfully purchased ${amount} shares of ${this.selectedTicker?.T}!`;
-        console.log('Purchase Response:', response);
-      },
-      error: (error) => {
-        this.purchaseMessage = 'Failed to purchase stock. Try again.';
-        console.error('Purchase Error:', error);
-      },
+    const buyResponse = await fetch('http://localhost:3000/api/buy', {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
+    const data = await buyResponse.json();
+
+    if (data.successful) {
+      const totalPrice = Number(
+        this.selectedTicker.prices[0].close * amount
+      ).toFixed(2);
+      console.log(
+        `Success! Bought ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`
+      );
+    } else {
+      console.log("Error: couldn't buy stock.");
+    }
   }
 
-  getStocks(): Promise<any> {
-    return this.marketService.getUserStocks(this.userId).toPromise();
+  async sellStock(amount: number) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('Authentication', this.userId);
+
+    const payload = {
+      ticker: this.selectedTicker.ticker,
+      price: this.selectedTicker.prices[0].close,
+      amount: amount,
+      type: 'sell',
+    };
+
+    const sellResponse = await fetch('http://localhost:3000/api/sell', {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const data = await sellResponse.json();
+
+    if (data.successful) {
+      const totalPrice = Number(
+        this.selectedTicker.prices[0].close * amount
+      ).toFixed(2);
+      console.log(
+        `Success! Sold ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`
+      );
+    } else {
+      console.log("Error: couldn't sell stock.");
+    }
   }
 
-  async sellStock(amount: number): Promise<void> {
+  async searchTicker(
+    ticker: string,
+    startDate = this.yesterday
+  ): Promise<CompanyResponse | null> {
     try {
-      const response = await this.getStocks();
-      const userStocks: { [key: string]: Stock } = response.stocks;
-
-      // Convert userStocks to an array of [key, stock] pairs
-      const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
-        userStocks
-      ).map(([id, stock]) => ({
-        id,
-        stock,
-      }));
-
-      if (userStocksArray && userStocksArray.length > 0) {
-        const stockToSell = userStocksArray.find(
-          ({ stock }) =>
-            stock.stockSymbol === this.selectedTicker?.T &&
-            stock.price === this.selectedTicker?.c &&
-            amount <= stock.shares
-        );
-
-        if (stockToSell) {
-          console.log(
-            `Selling ${amount} shares of ${stockToSell.stock.stockSymbol}`
-          );
-
-          if (!this.selectedTicker || amount <= 0) {
-            this.purchaseMessage =
-              'Please select a stock and enter a valid amount.';
-            return;
-          }
-
-          const payload = {
-            userId: this.userId,
-            stockSymbol: this.selectedTicker.T,
-            shares: stockToSell.stock.shares - amount,
-            price: this.selectedTicker.c,
-            stockId: stockToSell.id,
-          };
-
-          this.marketService.updateUserStocks(payload).subscribe({
-            next: (response) => {
-              console.log('Update successful:', response);
-            },
-            error: (error) => {
-              console.error('Error updating stock:', error);
-            },
-          });
-        } else {
-          console.log('Selected stock not found in user holdings');
-        }
-      } else {
-        console.log('No stocks found in user holdings');
+      const response = await fetch(
+        `http://localhost:3000/api/stock/${ticker}/${startDate}`
+      );
+      const stockData = await response.json();
+      if (stockData.successful) {
+        this.stocks = [stockData];
+        return stockData;
       }
-    } catch (error) {
-      console.error('Error fetching stocks:', error);
+      return null;
+    } catch (err) {
+      console.error('Error fetching stock data:', err);
+      return null;
     }
   }
 
-  updatePagination(): void {
-    this.totalPages = Math.ceil(
-      this.filteredTickers.length / this.itemsPerPage
-    );
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTickers = this.filteredTickers.slice(startIndex, endIndex);
+  selectTicker(ticker: CompanyResponse): void {
+    this.selectedTicker = { ...ticker };
+    console.log('Selected Ticker:', this.selectedTicker);
   }
 
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePagination();
+  clearStocks(query: string) {
+    if (query === '') {
+      this.stocks = [];
     }
-  }
-
-  selectTicker(ticker: TickerResult): void {
-    this.selectedTicker = ticker;
-    this.amount = 1;
-  }
-
-  filterTickers(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    this.filteredTickers = this.tickers.filter((ticker) =>
-      ticker.T.toLowerCase().includes(query)
-    );
-    this.currentPage = 1;
-    this.updatePagination();
   }
 }

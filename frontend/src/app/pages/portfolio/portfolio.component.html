@@ -1,1 +1,79 @@
-<p>portfolio works!</p>
+<div class="portfolio-page">
+  <header class="page-header">
+    <h1>Your Portfolio</h1>
+    <p>Track your investments and recent trades.</p>
+  </header>
+
+  <section class="portfolio-summary">
+    <h2>Portfolio Summary</h2>
+    <div class="summary-cards">
+      <div class="card">
+        <h3>Total Value</h3>
+        <p>{{ portfolioValue }} STC</p>
+      </div>
+      <div class="card">
+        <h3>Available Coins</h3>
+        <p>{{ availableCoins }} STC</p>
+      </div>
+      <div class="card">
+        <h3>Gain/Loss</h3>
+        <p [class.positive]="gainLoss >= 0" [class.negative]="gainLoss < 0">
+          {{ gainLoss }} STC
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="portfolio-holdings">
+    <h2>Holdings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Stock</th>
+          <th>Shares</th>
+          <th>Price</th>
+          <th>Value</th>
+          <th>Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let holding of holdings">
+          <td>{{ holding.stockSymbol }}</td>
+          <td>{{ holding.shares }}</td>
+          <td>{{ holding.price }}</td>
+          <td>{{ holding.total }}</td>
+          <td
+            [class.positive]="holding.change >= 0"
+            [class.negative]="holding.change < 0"
+          >
+            {{ holding.change | percent }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="recent-transactions">
+    <h2>Recent Transactions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Stock</th>
+          <th>Date</th>
+          <th>Shares</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let transaction of transactions">
+          <td>{{ transaction.stockSymbol }}</td>
+          <td>{{ transaction.timestamp }}</td>
+          <td>{{ transaction.shares }}</td>
+          <td>{{ transaction.price }} STC</td>
+          <td>{{ transaction.total }} STC</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

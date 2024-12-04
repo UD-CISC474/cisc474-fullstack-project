@@ -1,0 +1,149 @@
+// Variables for consistent theming
+$positive-color: #28a745;
+$negative-color: #dc3545;
+$primary-color: #007bff;
+$light-gray: #f8f9fa;
+$dark-gray: #343a40;
+
+// Base styles
+body {
+  font-family: Arial, sans-serif;
+  background-color: $light-gray;
+  margin: 0;
+  padding: 0;
+}
+
+.portfolio-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 30px;
+
+    h1 {
+      color: $primary-color;
+      margin: 0;
+    }
+
+    p {
+      color: $dark-gray;
+      font-size: 1.2rem;
+    }
+  }
+
+  .portfolio-summary {
+    margin-bottom: 30px;
+
+    h2 {
+      font-size: 1.5rem;
+      color: $dark-gray;
+      margin-bottom: 20px;
+    }
+
+    .summary-cards {
+      display: flex;
+      gap: 20px;
+
+      .card {
+        flex: 1;
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+
+        h3 {
+          color: $dark-gray;
+          margin-bottom: 10px;
+        }
+
+        p {
+          font-size: 1.5rem;
+          font-weight: bold;
+
+          &.positive {
+            color: $positive-color;
+          }
+
+          &.negative {
+            color: $negative-color;
+          }
+        }
+      }
+    }
+  }
+
+  .portfolio-holdings,
+  .recent-transactions {
+    margin-bottom: 30px;
+
+    h2 {
+      font-size: 1.5rem;
+      color: $dark-gray;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+      thead {
+        background-color: $primary-color;
+        color: white;
+
+        th {
+          padding: 10px;
+          text-align: left;
+          font-size: 1rem;
+        }
+      }
+
+      tbody {
+        tr {
+          &:nth-child(even) {
+            background-color: $light-gray;
+          }
+
+          &:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+          }
+        }
+
+        td {
+          padding: 10px;
+          font-size: 0.9rem;
+
+          &.positive {
+            color: $positive-color;
+          }
+
+          &.negative {
+            color: $negative-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .portfolio-summary .summary-cards {
+    flex-direction: column;
+  }
+
+  table {
+    font-size: 0.8rem;
+
+    thead th,
+    tbody td {
+      padding: 8px;
+    }
+  }
+}

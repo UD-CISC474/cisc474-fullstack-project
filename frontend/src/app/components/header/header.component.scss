@@ -1,15 +1,22 @@
 mat-toolbar {
-	mat-tab-group {
-	  margin-left: 20px;
-	}
-  
-	.spacer {
-	  flex: 1;
-	}
-  
-	.login-btn {
-		position:absolute;
-		right:20px;
-	}
+  display: flex;
+  align-items: center;
+
+  mat-tab-group {
+    margin-left: 20px;
+    flex-grow: 1;
   }
-  
+
+  .spacer {
+    flex-grow: 1;
+  }
+
+  .auth-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    margin: 0;
+  }
+}

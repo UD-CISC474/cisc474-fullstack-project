@@ -1,22 +1,46 @@
 import express from "express";
-import { Controller } from "./controller";
+import {
+  getStock,
+  getPortfolio,
+  buyStock,
+  sellStock,
+  login,
+  logout,
+  testFirebase,
+  testTokenAuth,
+  createAccount
+} from "./controller";
 
 export class ApiRouter {
   private router: express.Router = express.Router();
-  private controller: Controller = new Controller();
 
   // Creates the routes for this router and returns a populated router object
   public getRouter(): express.Router {
-    this.router.get("/hello", this.controller.getHello);
-    this.router.post("/hello", this.controller.postHello);
-    this.router.get("/firebase", this.controller.firebaseTest);
-    this.router.post("/stock", this.controller.stockTest);
-    this.router.post("/all", this.controller.postAllStocks);
-    this.router.get("/all", this.controller.getAllStocks);
-    this.router.post("/firebase", this.controller.postFirebase);
-    this.router.post("/user/stock", this.controller.postUserStock);
-    this.router.get("/user/stock", this.controller.getUserStock);
-    this.router.put("/user/stock", this.controller.updateUserStock);
+
+    // Retrieve price information about a stock/company (no auth required)
+    // start/end specify date range for price info
+    this.router.get("/stock/:ticker", getStock);
+    this.router.get("/stock/:ticker/:start", getStock);
+    this.router.get("/stock/:ticker/:start/:end", getStock);
+
+    // User sign-in
+    this.router.post("/login", login);
+    this.router.post("/logout", logout);
+    this.router.post("/create-account", createAccount);
+
+    // Retireve user portfolio (start/end specify date range)
+    // Auth token required (hence why using post)
+    this.router.post("/portfolio", getPortfolio);
+    this.router.post("/portfolio/:start/:end", getPortfolio);
+
+    // Buy/sell stock (auth token required)
+    this.router.post("/buy", buyStock);
+    this.router.post("/sell", sellStock);
+
+    // Test routes (can delete)
+    this.router.get("/test-firebase", testFirebase);
+    this.router.post("/authtoken/", testTokenAuth)
+
     return this.router;
   }
 }

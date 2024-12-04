@@ -1,17 +1,10 @@
 import { initializeApp, cert, ServiceAccount } from "firebase-admin/app";
 import { getDatabase, Database } from "firebase-admin/database";
-import * as dotenv from "dotenv";
-import { environment } from "./environment";
-
-dotenv.config();
-
-const firebaseCredentials: ServiceAccount = JSON.parse(
-  JSON.stringify(environment.FIREBASE_ADMIN_KEY)
-);
+import * as serviceAccount from "../firebase-service-account.json";
 
 const firebase = initializeApp({
-  credential: cert(firebaseCredentials),
-  databaseURL: "https://super-trader-f8f83-default-rtdb.firebaseio.com/",
+  credential: cert(serviceAccount as ServiceAccount),
+  databaseURL: "https://super-trader-74ac9-default-rtdb.firebaseio.com/",
 });
 const database: Database = getDatabase(firebase);
 
