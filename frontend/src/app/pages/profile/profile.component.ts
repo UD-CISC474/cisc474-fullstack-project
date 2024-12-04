@@ -168,7 +168,7 @@ export class ProfileComponent {
         console.log('User signed up successfully');
         this.router.navigate(['/dashboard']);
       } else {
-        console.error('Login failed:', data.message || 'Unknown error');
+        console.error('Signup failed:', data.message || 'Unknown error');
       }
       this.router.navigate(['/dashboard']);
     } catch (error) {
