@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MarketService } from '../market/market.service';
 import { DashboardService } from './dashboard.service';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import dayjs from 'dayjs';
 import { Stock } from '../../interfaces';
 import { lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import OpenAI from 'openai';
+import { OPENAI_API_KEY } from '../../../../environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,10 +24,14 @@ export class DashboardComponent {
   spValue: number = 0;
   dowValue: number = 0;
   portfolioValue: number = 0;
-  recentNews: string[] = ['NEWS', 'NEWS', 'NEWS', 'NEWS'];
+  recentNews: string[] = [
+    'Loading...',
+    'Loading...',
+    'Loading...',
+    'Loading...',
+  ];
 
   constructor(
-    private auth: Auth,
     private marketService: MarketService,
     private router: Router,
     private dashboardService: DashboardService
@@ -48,41 +53,32 @@ export class DashboardComponent {
       yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
 
-    this.getIndicesValue(yesterday);
+    this.getNewsFromOpenAI();
   }
 
-  async getIndicesValue(date: string): Promise<void> {
-    const apiResponse = await lastValueFrom(
-      this.dashboardService.getIndices(date)
-    );
+  async getNewsFromOpenAI() {
+    const openai = new OpenAI({
+      apiKey: OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true,
+    });
 
-    if (apiResponse.success && apiResponse.response) {
-      const response = apiResponse.response;
-      this.nasdaqValue = Number(Number(response.nasdaq?.close).toFixed(2));
-    } else {
-      console.error('Failed to fetch indices data:', apiResponse.message);
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a stock broker.' },
+        {
+          role: 'user',
+          content:
+            'Give me some news on 4 trending stocks. Inbetween each news entry, put this character |. Do not use any markdown features or numbering.',
+        },
+      ],
+    });
+
+    const response = completion.choices[0].message.content;
+    let responseAsArray = response?.split('|');
+
+    if (responseAsArray) {
+      this.recentNews = responseAsArray;
     }
-  }
-
-  async getPortfolioValue(): Promise<void> {
-    const response = await lastValueFrom(
-      this.marketService.getUserStocks(this.userId)
-    );
-
-    const userStocks: { [key: string]: Stock } = response.stocks;
-    const userStocksArray: { id: string; stock: Stock }[] = Object.entries(
-      userStocks
-    ).map(([id, stock]) => ({
-      id,
-      stock,
-    }));
-
-    let totalValue = 0;
-    if (userStocksArray && userStocksArray.length > 0) {
-      userStocksArray.map(({ stock }) => {
-        totalValue += stock.price * stock.shares;
-      });
-    }
-    this.portfolioValue = Number(totalValue.toFixed(2));
   }
 }
