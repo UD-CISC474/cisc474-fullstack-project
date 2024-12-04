@@ -7,6 +7,7 @@ import {
   logout as authLogout,
   createAccount as authCreateAccount
 } from "./auth";
+import { getHoldings } from "./portfolio";
 
 
 // HELPER FUNCTIONS -- DO NOT EXPORT THESE
@@ -37,9 +38,22 @@ const getStock = async (req: Req, res: Res): Promise<void> => {
 
 // Express route for getting all information about a user's portfolio
 const getPortfolio = async (req: Req, res: Res): Promise<void> => {
-  const { username, token, valid } = await getAuthentication(req);
+  const auth = await getAuthentication(req);
 
-  res.send(`Token is: ${token}; Username is: ${username}`);
+  if(auth.valid) {
+    res.send({
+      username: auth.valid,
+      valid: auth.valid,
+      success: true,
+      availableCash: 0,
+      transactions: [],
+      holdings: await getHoldings(auth.username)
+    });
+  } else {
+    res.send(auth);
+  }
+
+  //res.send(`Token is: ${token}; Username is: ${username}`);
 }
 
 // Express route for purchasing a stock
