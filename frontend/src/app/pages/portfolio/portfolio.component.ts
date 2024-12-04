@@ -14,7 +14,8 @@ import { Stock, Transaction } from '../../interfaces';
   styleUrls: ['./portfolio.component.scss'],
 })
 export class PortfolioComponent {
-  userId: string = 'default-user';
+  userId: string = '';
+  sessionToken: string = '';
   portfolioValue: number = 0;
   transactions: Transaction[] = [];
   availableCoins: number = 0;
@@ -30,6 +31,15 @@ export class PortfolioComponent {
     // this.loadTransactions();
     // this.loadHoldings();
     // this.loadAvailableCoins();
+  }
+
+  ngOnInit(): void {
+    const username = localStorage.getItem('username');
+    const token = localStorage.getItem('token');
+    if (username && token) {
+      this.userId = username;
+      this.sessionToken = token;
+    }
   }
 
   async loadAvailableCoins(): Promise<void> {

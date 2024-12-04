@@ -17,7 +17,8 @@ import { CommonModule } from '@angular/common';
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent {
-  userId: string = 'default-user';
+  userId: string = '';
+  sessionToken = '';
   nasdaqValue: number = 0;
   spValue: number = 0;
   dowValue: number = 0;
@@ -34,6 +35,12 @@ export class DashboardComponent {
   }
 
   ngOnInit(): void {
+    const username = localStorage.getItem('username');
+    const token = localStorage.getItem('token');
+    if (username && token) {
+      this.userId = username;
+      this.sessionToken = token;
+    }
     let yesterday: string;
     if (dayjs().day().toString() === 'Monday') {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
