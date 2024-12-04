@@ -61,7 +61,12 @@ const login = ({
       // Make sure the hash exists in the Firebase
       if (!snap.exists() || dbHash === "") {
         // hash does not exist in database
-        resolve({ username, token: "", valid: false });
+        resolve({
+          username,
+          token: "",
+          valid: false,
+          message: "User does not exist.",
+        });
         return;
       }
 
@@ -78,7 +83,12 @@ const login = ({
         resolve({ username, token, valid: true });
       } else {
         // Password is incorrect
-        resolve({ username, token: "", valid: false });
+        resolve({
+          username,
+          token: "",
+          valid: false,
+          message: "Incorrect password.",
+        });
       }
     });
   });
@@ -127,6 +137,7 @@ const createAccount = ({
           valid: false,
           message: "Password too short.",
         });
+        return;
       }
 
       const passwordHash = hashSync(password, 8);

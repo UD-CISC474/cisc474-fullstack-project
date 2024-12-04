@@ -73,6 +73,8 @@ export class ProfileComponent {
     if (event.index === 0) {
       this.loginUsername.reset();
       this.loginPassword.reset();
+      // window.localStorage.clear();
+      console.log(localStorage.length)
     } else if (event.index === 1) {
       this.signupUsername.reset();
       this.signupPassword.reset();
@@ -118,14 +120,19 @@ export class ProfileComponent {
       });
 
       const data = await response.json();
+      console.log(data)
       if (response.ok) {
-        localStorage.setItem('username', username);
+        if (!data.valid) {
+          console.error('Login failed:', data.message || 'Unknown error');
+          alert(`Login failed: ${data.message}`);
+        }else {
+          localStorage.setItem('username', username);
         localStorage.setItem('token', data.token);
         console.log('User logged in successfully!');
         console.log('token:' + localStorage.getItem('token'))
         this.router.navigate(['/dashboard']);
-      } else {
-        console.error('Login failed:', data.message || 'Unknown error');
+        }
+        
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -166,15 +173,18 @@ export class ProfileComponent {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem('username', username);
-        localStorage.setItem('token', data.token);
-        console.log('User signed up successfully');
-        // this.router.navigate(['/dashboard']);
-        this.selectedIndex = 0;
-        // this.cdr.markForCheck();
-      } else {
+        if (data.valid) {
+          localStorage.setItem('username', username);
+          localStorage.setItem('token', data.token);
+          console.log('User signed up successfully');
+          // this.router.navigate(['/dashboard']);
+          this.selectedIndex = 0;
+          // this.cdr.markForCheck();
+        }else {
         console.error('Signup failed:', data.message || 'Unknown error');
+        alert(`Signup failed: ${data.message}`);
       }
+      } 
       // this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Sign-up failed:', error);
