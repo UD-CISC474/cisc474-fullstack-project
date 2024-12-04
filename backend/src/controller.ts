@@ -54,7 +54,7 @@ const exchangeStock = async ({
       type,
       amount,
       price,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString().split("T")[0],
     });
   } else if (type === "sell") {
     const tickerTransactions = transactions[ticker] || [];
@@ -74,7 +74,7 @@ const exchangeStock = async ({
       type,
       amount,
       price,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString().split("T")[0],
     });
   }
 
