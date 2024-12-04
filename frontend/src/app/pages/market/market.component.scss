@@ -22,31 +22,53 @@
   }
 
   // Search bar styling
-  .search-bar {
-    width: 97.5%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
+  .search-bar-container {
+    display: flex;
+    gap: 10px;
     margin-bottom: 15px;
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
 
-    &:focus {
-      border-color: #2196f3;
-      box-shadow: 0 0 4px rgba(33, 150, 243, 0.4);
+    .search-bar {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+
+      &:focus {
+        border-color: #2196f3;
+        box-shadow: 0 0 4px rgba(33, 150, 243, 0.4);
+      }
+    }
+
+    .search-button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+
+      &:active {
+        background-color: #004494;
+      }
+
+      &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
     }
   }
 
-  & > div {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
   .stock-list {
-    max-height: 80vh;
+    max-height: 70vh;
     overflow-y: auto;
     padding-right: 10px;
     background-color: #f9f9f9;
@@ -242,36 +264,5 @@
         }
       }
     }
-  }
-}
-
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 15px;
-  gap: 10px;
-
-  button {
-    padding: 6px 8px;
-    background-color: initial;
-    border: none;
-    font-size: 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-
-    &:disabled {
-      cursor: not-allowed;
-    }
-
-    &:hover:not(:disabled) {
-      background-color: rgba(0, 0, 0, 0.1);
-    }
-  }
-
-  span {
-    font-size: 14px;
-    color: #333;
   }
 }
