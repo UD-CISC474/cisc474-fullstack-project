@@ -98,7 +98,18 @@ export class MarketComponent implements OnInit {
     headers.append('Content-Type', 'application/json');
     headers.append('Authentication', this.userId);
 
-    const buyResponse = await fetch('http://localhost:3000/api/buy');
+    const payload = {
+      ticker: this.selectedTicker.ticker,
+      price: this.selectedTicker.prices[0].close,
+      amount: amount,
+      type: 'buy',
+    };
+
+    const buyResponse = await fetch('http://localhost:3000/api/buy', {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
     const data = await buyResponse.json();
 
     if (data.successful) {
@@ -118,7 +129,18 @@ export class MarketComponent implements OnInit {
     headers.append('Content-Type', 'application/json');
     headers.append('Authentication', this.userId);
 
-    const sellResponse = await fetch('http://localhost:3000/api/sell');
+    const payload = {
+      ticker: this.selectedTicker.ticker,
+      price: this.selectedTicker.prices[0].close,
+      amount: amount,
+      type: 'sell',
+    };
+
+    const sellResponse = await fetch('http://localhost:3000/api/sell', {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
     const data = await sellResponse.json();
 
     if (data.successful) {
