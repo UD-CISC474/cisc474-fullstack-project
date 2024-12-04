@@ -43,7 +43,7 @@ export interface CurrencyResponse {
   currency: number;
 }
 
-interface Price {
+export interface Price {
   average: number;
   close: number;
   high: number;

@@ -6,13 +6,14 @@ import { FormsModule } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { CompanyResponse } from '../../interfaces';
 import { Router } from '@angular/router';
+import { GraphComponent } from '../../components/graph/graph.component';
 
 @Component({
   selector: 'app-market',
   templateUrl: './market.component.html',
   styleUrls: ['./market.component.scss'],
   standalone: true,
-  imports: [NgFor, FormsModule, MatIcon],
+  imports: [NgFor, FormsModule, MatIcon, GraphComponent],
 })
 export class MarketComponent implements OnInit {
   selectedTicker: CompanyResponse = {
