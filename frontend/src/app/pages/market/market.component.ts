@@ -96,7 +96,6 @@ export class MarketComponent implements OnInit {
   async buyStock(amount: number) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    console.log(this.sessionToken);
     headers.append('Authorization', this.sessionToken);
 
     const payload = {
@@ -128,7 +127,6 @@ export class MarketComponent implements OnInit {
   async sellStock(amount: number) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    console.log(this.sessionToken);
     headers.append('Authorization', this.sessionToken);
 
     const payload = {
