@@ -109,7 +109,7 @@ export class ProfileComponent {
         password: this.loginPassword.value!,
       };
       const response = await this.http
-        .post<{ valid: boolean; token: string }>('http://localhost:3000/login', credentials)
+        .post<{ valid: boolean; token: string }>('http://localhost:3000/api/login', credentials)
         .toPromise();
 
       if (response?.valid) {
@@ -150,7 +150,7 @@ export class ProfileComponent {
         password: this.signupPassword.value!,
       };
       const response = await this.http
-        .post<{ valid: boolean; token: string; message?: string }>('http://localhost:3000/create-account', credentials)
+        .post<{ valid: boolean; token: string; message?: string }>('http://localhost:3000/api/create-account', credentials)
         .toPromise();
 
       if (response?.valid) {

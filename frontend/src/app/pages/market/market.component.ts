@@ -3,9 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import dayjs from 'dayjs';
 import { FormsModule } from '@angular/forms';
-import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import { MatIcon } from '@angular/material/icon';
-import {StockResponse } from '../../interfaces';
+import { StockResponse } from '../../interfaces';
 import { Router } from '@angular/router';
 
 @Component({
@@ -17,69 +16,67 @@ import { Router } from '@angular/router';
 })
 export class MarketComponent implements OnInit {
   tickers: StockResponse[] = [];
-  filteredTickers: StockResponse[] = [];
   searchQuery: string = '';
   selectedTicker: StockResponse | null = null;
-  currentPage: number = 1;
-  itemsPerPage: number = 50;
-  totalPages: number = 0;
-  paginatedTickers: StockResponse[] = [];
-
-  userId: string = 'default-user';
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
+
+  // Hardcoded popular stocks
+  popularStocks: string[] = ['AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA'];
+
+  userId: string = 'default-user';
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
     console.log(this.userId);
-    let yesterday: string;
-    if (dayjs().day().toString() === 'Monday') {
-      yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
-    } else {
-      yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
-    }
-
-    this.loadTickers(yesterday);
+    this.loadPopularStocks();
   }
 
-  async loadTickers(date: string): Promise<void> {
+  // Load hardcoded popular stocks
+  async loadPopularStocks(): Promise<void> {
     try {
-      const response = await fetch(`http://localhost:3000/api/tickers?date=${date}`);
-      const tickerResponse = await response.json();
-      console.log('Full ticker response:', tickerResponse);
+      const requests = this.popularStocks.map((ticker) =>
+        this.getStock(ticker).catch((error) => {
+          console.error(`Failed to load data for ticker ${ticker}`, error);
+          return null;
+        })
+      );
 
-      this.tickers = tickerResponse?.response?.results || [];
-      this.filterTickers();
+      const responses = await Promise.all(requests);
+      this.tickers = responses.filter((data) => data !== null) as StockResponse[];
     } catch (error) {
-      console.error('Failed to load tickers', error);
-      this.tickers = [];
-      this.filteredTickers = [];
+      console.error('Failed to load popular stocks', error);
     }
   }
 
-  filterTickers(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    this.filteredTickers = this.tickers.filter((ticker) =>
-      ticker.ticker.toLowerCase().includes(query)
-    );
-    this.currentPage = 1;
-    this.updatePagination();
-  }
-
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredTickers.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTickers = this.filteredTickers.slice(startIndex, endIndex);
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePagination();
+  async searchStock(): Promise<void> {
+    if (this.searchQuery.trim() === '') {
+      console.error('Please enter a valid ticker symbol');
+      return;
     }
+
+    try {
+      const response = await this.getStock(this.searchQuery.trim().toUpperCase());
+      this.selectedTicker = response;
+    } catch (error) {
+      console.error('Failed to find the stock', error);
+      this.selectedTicker = null;
+    }
+  }
+
+  async getStock(ticker: string, start?: Date, end?: Date): Promise<StockResponse> {
+    let url = `http://localhost:3000/api/stock/${ticker}`;
+    if (start) {
+      url = `${url}/${start.toISOString().substring(0, 10)}`;
+    }
+    if (end) {
+      url = `${url}/${end.toISOString().substring(0, 10)}`;
+    }
+
+    const response: StockResponse = await fetch(url).then((res) => res.json());
+    return response;
   }
 
   selectTicker(ticker: StockResponse): void {
@@ -121,46 +118,4 @@ export class MarketComponent implements OnInit {
     console.log(`Graph updated for period: ${period}`);
     // Placeholder for graph update
   }
-
-
-  // async getStock(ticker: string, start?: Date, end?: Date): Promise<StockResponse> {
-  //   let url = `http://localhost:3000/api/stock/${ticker}`;
-  //   if(typeof start !== undefined) {
-  //     url = `${url}/${start.toISOString().substring(0, 10)}`;
-  //   }
-  //   if(typeof end !== undefined) {
-  //     url = `${url}/${end.toISOString().substring(0, 10)}`;
-  //   }
-  
-  //   const response: StockResponse = await fetch(url).then(res => res.json());
-  //   return response;
-  // }
-
-  async getStock(ticker: string, start?: Date, end?: Date): Promise<StockResponse> {
-    let url = `http://localhost:3000/api/stock/${ticker}`;
-    if (start) {
-      url = `${url}/${start.toISOString().substring(0, 10)}`;
-    }
-    if (end) {
-      url = `${url}/${end.toISOString().substring(0, 10)}`;
-    }
-  
-    const response: StockResponse = await fetch(url).then(res => res.json());
-    return response;
-  }
-  
-  
-  async getPortfolio(username: string, token: string): Promise<any> {
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("Authorization", token);
-  
-    const response = await fetch("http://localhost:3000/api/portfolio", {
-        headers,
-        method: "POST",
-        body: JSON.stringify({ username })
-    }).then(res => res.json());
-  
-    return response;
-  }  
 }

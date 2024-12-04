@@ -10,15 +10,17 @@
         class="search-bar"
         placeholder="Search for a ticker..."
         [(ngModel)]="searchQuery"
-        (input)="filterTickers()"
+        (keyup.enter)="searchStock()"
         aria-label="Search for a stock ticker"
       />
+      <button (click)="searchStock()" aria-label="Search Stock">Search</button>
     </div>
 
     <!-- Stock List -->
     <div class="stock-list">
+      <h3>Popular Stocks</h3>
       <div
-        *ngFor="let ticker of paginatedTickers"
+        *ngFor="let ticker of tickers"
         class="stock-item"
         (click)="selectTicker(ticker)"
         tabindex="0"
@@ -28,30 +30,9 @@
         <span class="stock-name">{{ ticker.ticker }}</span>
         <span class="stock-price">{{ ticker.prices?.[0]?.close || "Loading" }} STC</span>
       </div>
-      <div *ngIf="paginatedTickers.length === 0" class="no-results">
+      <div *ngIf="tickers.length === 0" class="no-results">
         No stocks found.
       </div>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div class="pagination-controls">
-      <button
-        mat-icon-button
-        (click)="goToPage(currentPage - 1)"
-        [disabled]="currentPage === 1"
-        aria-label="Go to previous page"
-      >
-        <mat-icon>chevron_left</mat-icon>
-      </button>
-      <span aria-live="polite">Page {{ currentPage }} of {{ totalPages }}</span>
-      <button
-        mat-icon-button
-        (click)="goToPage(currentPage + 1)"
-        [disabled]="currentPage === totalPages"
-        aria-label="Go to next page"
-      >
-        <mat-icon>chevron_right</mat-icon>
-      </button>
     </div>
   </div>
 
@@ -63,7 +44,7 @@
         <h3>{{ selectedTicker?.ticker || "Select a Stock" }}</h3>
         <p>
           Current Price:
-          <span> {{ selectedTicker?.prices?.[0]?.close || "Loading" }} STC </span>
+          <span>{{ selectedTicker?.prices?.[0]?.close || "Loading" }} STC</span>
         </p>
 
         <!-- Stock Purchase Section -->
