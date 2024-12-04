@@ -96,13 +96,14 @@ export class MarketComponent implements OnInit {
   async buyStock(amount: number) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    headers.append('Authentication', this.userId);
+    console.log(this.sessionToken);
+    headers.append('Authorization', this.sessionToken);
 
     const payload = {
+      username: this.userId,
       ticker: this.selectedTicker.ticker,
       price: this.selectedTicker.prices[0].close,
       amount: amount,
-      type: 'buy',
     };
 
     const buyResponse = await fetch('http://localhost:3000/api/buy', {
@@ -127,13 +128,14 @@ export class MarketComponent implements OnInit {
   async sellStock(amount: number) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    headers.append('Authentication', this.userId);
+    console.log(this.sessionToken);
+    headers.append('Authorization', this.sessionToken);
 
     const payload = {
+      username: this.userId,
       ticker: this.selectedTicker.ticker,
       price: this.selectedTicker.prices[0].close,
       amount: amount,
-      type: 'sell',
     };
 
     const sellResponse = await fetch('http://localhost:3000/api/sell', {
