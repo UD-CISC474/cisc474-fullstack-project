@@ -68,8 +68,28 @@ export class MarketComponent implements OnInit {
   }
 
   updateGraphPeriod(period: string): void {
-    console.log(`Graph updated for period: ${period}`);
-    // Placeholder for graph update
+    let startDate = this.yesterday;
+    if (period === '5D') {
+      startDate = dayjs().subtract(5, 'day').format('YYYY-MM-DD');
+    } else if (period === '1M') {
+      startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
+    } else if (period === '6M') {
+      startDate = dayjs().subtract(180, 'day').format('YYYY-MM-DD');
+    } else if (period === '1Y') {
+      startDate = dayjs().subtract(365, 'day').format('YYYY-MM-DD');
+    } else if (period === '2Y') {
+      startDate = dayjs().subtract(730, 'day').format('YYYY-MM-DD');
+    }
+
+    this.searchTicker(this.selectedTicker.ticker, startDate, this.yesterday)
+      .then((updatedStock) => {
+        if (updatedStock) {
+          this.selectedTicker = { ...updatedStock };
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to update graph period:', err);
+      });
   }
 
   buyStock(amount: number) {
@@ -80,24 +100,29 @@ export class MarketComponent implements OnInit {
     throw new Error('Method not implemented.');
   }
 
-  async searchTicker(ticker: string) {
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
-
-    const response = await fetch(
-      `http://localhost:3000/api/stock/${ticker}/${this.yesterday}`
-    );
-
-    const stockData = await response.json();
-
-    if (stockData.successful) {
-      this.stocks = [stockData];
+  async searchTicker(
+    ticker: string,
+    startDate = this.yesterday,
+    endDate = this.yesterday
+  ): Promise<CompanyResponse | null> {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/stock/${ticker}/${startDate}`
+      );
+      const stockData = await response.json();
+      if (stockData.successful) {
+        this.stocks = [stockData];
+        return stockData;
+      }
+      return null;
+    } catch (err) {
+      console.error('Error fetching stock data:', err);
+      return null;
     }
-    console.log(stockData);
   }
 
   selectTicker(ticker: CompanyResponse): void {
-    this.selectedTicker = ticker; // Set the selected stock
+    this.selectedTicker = { ...ticker };
     console.log('Selected Ticker:', this.selectedTicker);
   }
 

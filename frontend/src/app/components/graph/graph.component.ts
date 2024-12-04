@@ -27,7 +27,11 @@ export class GraphComponent implements OnChanges {
   public chart: ApexChart = {
     type: 'area',
     height: 350,
+    zoom: {
+      enabled: false,
+    },
   };
+
   public dataLabels: ApexDataLabels = {
     enabled: false,
   };
