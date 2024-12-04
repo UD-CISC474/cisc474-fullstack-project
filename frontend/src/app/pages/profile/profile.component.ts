@@ -115,7 +115,15 @@ export class ProfileComponent {
         body: JSON.stringify({ username, password }),
       });
 
-      this.router.navigate(['/dashboard']);
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('username', username);
+        localStorage.setItem('token', data.token);
+        console.log('User logged in successfully!');
+        this.router.navigate(['/dashboard']);
+      } else {
+        console.error('Login failed:', data.message || 'Unknown error');
+      }
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -153,9 +161,15 @@ export class ProfileComponent {
         body: JSON.stringify({ username, password }),
       });
 
-      console.log(response);
-
-      console.log('User signed up successfully');
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('username', username);
+        localStorage.setItem('token', data.token);
+        console.log('User signed up successfully');
+        this.router.navigate(['/dashboard']);
+      } else {
+        console.error('Signup failed:', data.message || 'Unknown error');
+      }
       this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Sign-up failed:', error);

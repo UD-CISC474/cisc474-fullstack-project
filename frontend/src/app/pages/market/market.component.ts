@@ -25,7 +25,8 @@ export class MarketComponent implements OnInit {
   totalPages: number = 0;
   paginatedTickers: CompanyResponse[] = [];
 
-  userId: string = 'default-user';
+  userId: string = '';
+  sessionToken: string = '';
   amount: number = 1;
   purchaseMessage: string = '';
   sellMessage: string = '';
@@ -33,7 +34,13 @@ export class MarketComponent implements OnInit {
   constructor(private marketService: MarketService, private router: Router) {}
 
   ngOnInit(): void {
-    console.log(this.userId);
+    const username = localStorage.getItem('username');
+    const token = localStorage.getItem('token');
+    if (username && token) {
+      this.userId = username;
+      this.sessionToken = token;
+    }
+
     let yesterday: string;
     if (dayjs().day().toString() === 'Monday') {
       yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
