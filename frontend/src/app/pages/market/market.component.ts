@@ -7,6 +7,7 @@ import { MatIcon } from '@angular/material/icon';
 import { CompanyResponse } from '../../interfaces';
 import { Router } from '@angular/router';
 import { GraphComponent } from '../../components/graph/graph.component';
+import { user } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-market',
@@ -92,12 +93,66 @@ export class MarketComponent implements OnInit {
       });
   }
 
-  buyStock(amount: number) {
-    throw new Error('Method not implemented.');
+  async buyStock(amount: number) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('Authentication', this.userId);
+
+    const payload = {
+      ticker: this.selectedTicker.ticker,
+      price: this.selectedTicker.prices[0].close,
+      amount: amount,
+      type: 'buy',
+    };
+
+    const buyResponse = await fetch('http://localhost:3000/api/buy', {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const data = await buyResponse.json();
+
+    if (data.successful) {
+      const totalPrice = Number(
+        this.selectedTicker.prices[0].close * amount
+      ).toFixed(2);
+      console.log(
+        `Success! Bought ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`
+      );
+    } else {
+      console.log("Error: couldn't buy stock.");
+    }
   }
 
-  sellStock(amount: number) {
-    throw new Error('Method not implemented.');
+  async sellStock(amount: number) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('Authentication', this.userId);
+
+    const payload = {
+      ticker: this.selectedTicker.ticker,
+      price: this.selectedTicker.prices[0].close,
+      amount: amount,
+      type: 'sell',
+    };
+
+    const sellResponse = await fetch('http://localhost:3000/api/sell', {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const data = await sellResponse.json();
+
+    if (data.successful) {
+      const totalPrice = Number(
+        this.selectedTicker.prices[0].close * amount
+      ).toFixed(2);
+      console.log(
+        `Success! Sold ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`
+      );
+    } else {
+      console.log("Error: couldn't sell stock.");
+    }
   }
 
   async searchTicker(
