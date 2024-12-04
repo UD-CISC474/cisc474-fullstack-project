@@ -81,7 +81,7 @@ export class MarketComponent implements OnInit {
       startDate = dayjs().subtract(730, 'day').format('YYYY-MM-DD');
     }
 
-    this.searchTicker(this.selectedTicker.ticker, startDate, this.yesterday)
+    this.searchTicker(this.selectedTicker.ticker, startDate)
       .then((updatedStock) => {
         if (updatedStock) {
           this.selectedTicker = { ...updatedStock };
@@ -102,8 +102,7 @@ export class MarketComponent implements OnInit {
 
   async searchTicker(
     ticker: string,
-    startDate = this.yesterday,
-    endDate = this.yesterday
+    startDate = this.yesterday
   ): Promise<CompanyResponse | null> {
     try {
       const response = await fetch(
