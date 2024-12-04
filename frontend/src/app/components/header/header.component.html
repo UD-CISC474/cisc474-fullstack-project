@@ -10,7 +10,7 @@
   </mat-tab-group>
   <span class="spacer"></span>
   <div class="auth-buttons">
-    <button mat-raised-button (click)="onLogout()">Logout</button>
-    <button mat-raised-button (click)="onLogin()">Login</button>
+    <button mat-raised-button *ngIf="isLoggedIn" (click)="onLogout()">Logout</button>
+    <button mat-raised-button *ngIf="!isLoggedIn" (click)="onLogin()">Login</button>
   </div>
 </mat-toolbar>

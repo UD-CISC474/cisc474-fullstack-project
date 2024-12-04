@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import {
   FormControl,
   Validators,
@@ -46,8 +46,10 @@ export class ProfileComponent {
   signupPassword = new FormControl('', [Validators.required]);
   confirmPassword = new FormControl('', [Validators.required]);
 
+  selectedIndex = 0;
+
   // Constructor to inject Firebase Auth and Database services
-  constructor(private router: Router) {
+  constructor(private router: Router, private cdr: ChangeDetectorRef) {
     // Listen for changes in confirmPassword to validate password matching
     merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
       .pipe(takeUntilDestroyed())
@@ -76,6 +78,10 @@ export class ProfileComponent {
       this.signupPassword.reset();
       this.confirmPassword.reset();
     }
+    const loginErrorMessage = document.getElementById('login-error-message')! as HTMLElement;
+    const signupErrorMessage = document.getElementById('signup-error-message')! as HTMLElement;
+    loginErrorMessage.style.display = 'none';
+    signupErrorMessage.style.display = 'none';
   }
 
   // Validates if signup password and confirm password match
@@ -109,6 +115,9 @@ export class ProfileComponent {
       const username = `${this.loginUsername.value}`;
       const password = this.loginPassword.value!;
 
+      const errorMessage = document.getElementById('login-error-message')! as HTMLElement;
+      const errorMessageText = document.getElementById('login-error-message-text') as HTMLElement;
+
       const response = await fetch('http://localhost:3000/api/login', {
         headers,
         method: 'POST',
@@ -116,13 +125,20 @@ export class ProfileComponent {
       });
 
       const data = await response.json();
+      console.log(data)
       if (response.ok) {
-        localStorage.setItem('username', username);
+        if (!data.valid) {
+          console.error('Login failed:', data.message || 'Unknown error');
+          errorMessageText.textContent = data.message;
+          errorMessage.style.display = 'block';
+        }else {
+          localStorage.setItem('username', username);
         localStorage.setItem('token', data.token);
         console.log('User logged in successfully!');
+        console.log('token:' + localStorage.getItem('token'))
         this.router.navigate(['/dashboard']);
-      } else {
-        console.error('Login failed:', data.message || 'Unknown error');
+        }
+        
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -155,6 +171,10 @@ export class ProfileComponent {
       const username = `${this.signupUsername.value}`;
       const password = this.signupPassword.value!;
 
+      const errorMessage = document.getElementById('signup-error-message')! as HTMLElement;
+      const errorMessageText = document.getElementById('signup-error-message-text') as HTMLElement;
+
+
       const response = await fetch('http://localhost:3000/api/create-account', {
         headers,
         method: 'POST',
@@ -163,14 +183,23 @@ export class ProfileComponent {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem('username', username);
-        localStorage.setItem('token', data.token);
-        console.log('User signed up successfully');
-        this.router.navigate(['/dashboard']);
-      } else {
+        if (data.valid) {
+          localStorage.setItem('username', username);
+          localStorage.setItem('token', data.token);
+          console.log('User signed up successfully');
+          alert(`Signed up successfully`);
+
+          // this.router.navigate(['/dashboard']);
+          this.selectedIndex = 0;
+          this.cdr.markForCheck();
+        }else {
         console.error('Signup failed:', data.message || 'Unknown error');
+        // alert(`Signup failed: ${data.message}`);
+        errorMessageText.textContent = data.message;
+        errorMessage.style.display = 'block';
       }
-      this.router.navigate(['/dashboard']);
+      } 
+      // this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Sign-up failed:', error);
     }
