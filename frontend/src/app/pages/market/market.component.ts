@@ -96,13 +96,13 @@ export class MarketComponent implements OnInit {
   async buyStock(amount: number) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    headers.append('Authentication', this.userId);
+    headers.append('Authorization', this.sessionToken);
 
     const payload = {
+      username: this.userId,
       ticker: this.selectedTicker.ticker,
       price: this.selectedTicker.prices[0].close,
       amount: amount,
-      type: 'buy',
     };
 
     const buyResponse = await fetch('http://localhost:3000/api/buy', {
@@ -111,8 +111,8 @@ export class MarketComponent implements OnInit {
       body: JSON.stringify(payload),
     });
     const data = await buyResponse.json();
-
-    if (data.successful) {
+    console.log(data);
+    if (data.message === 'Stock purchase successful.') {
       const totalPrice = Number(
         this.selectedTicker.prices[0].close * amount
       ).toFixed(2);
@@ -127,13 +127,13 @@ export class MarketComponent implements OnInit {
   async sellStock(amount: number) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
-    headers.append('Authentication', this.userId);
+    headers.append('Authorization', this.sessionToken);
 
     const payload = {
+      username: this.userId,
       ticker: this.selectedTicker.ticker,
       price: this.selectedTicker.prices[0].close,
       amount: amount,
-      type: 'sell',
     };
 
     const sellResponse = await fetch('http://localhost:3000/api/sell', {
@@ -143,7 +143,7 @@ export class MarketComponent implements OnInit {
     });
     const data = await sellResponse.json();
 
-    if (data.successful) {
+    if (data.message === 'Stock sale successful.') {
       const totalPrice = Number(
         this.selectedTicker.prices[0].close * amount
       ).toFixed(2);
