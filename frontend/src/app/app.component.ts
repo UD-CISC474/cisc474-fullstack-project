@@ -14,15 +14,21 @@ import { CommonModule } from '@angular/common';
 export class AppComponent implements OnInit {
   title = 'SuperTrader';
 
-  showHeader = true;
+  showHeader = false;
   
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    this.checkHeaderVisibility(this.router.url);
+
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showHeader = event.url !== '/profile';
+        this.checkHeaderVisibility(event.url);
       }
     });
+  }
+
+  checkHeaderVisibility(url: string) {
+    this.showHeader = url !== '/profile';
   }
 }

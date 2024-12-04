@@ -3,7 +3,7 @@
     <h1>Super Trader</h1>
   </div>
   <div class="login-container">
-    <mat-tab-group dynamicHeight (selectedTabChange)="onTabChange($event)">
+    <mat-tab-group dynamicHeight [(selectedIndex)]="selectedIndex" (selectedTabChange)="onTabChange($event)">
       <mat-tab label="Login">
         <form class="form-container">
           <mat-form-field appearance="outline">

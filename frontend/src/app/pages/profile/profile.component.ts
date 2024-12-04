@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import {
   FormControl,
   Validators,
@@ -46,8 +46,10 @@ export class ProfileComponent {
   signupPassword = new FormControl('', [Validators.required]);
   confirmPassword = new FormControl('', [Validators.required]);
 
+  selectedIndex = 0;
+
   // Constructor to inject Firebase Auth and Database services
-  constructor(private router: Router) {
+  constructor(private router: Router, private cdr: ChangeDetectorRef) {
     // Listen for changes in confirmPassword to validate password matching
     merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
       .pipe(takeUntilDestroyed())
@@ -120,6 +122,7 @@ export class ProfileComponent {
         localStorage.setItem('username', username);
         localStorage.setItem('token', data.token);
         console.log('User logged in successfully!');
+        console.log('token:' + localStorage.getItem('token'))
         this.router.navigate(['/dashboard']);
       } else {
         console.error('Login failed:', data.message || 'Unknown error');
@@ -166,11 +169,13 @@ export class ProfileComponent {
         localStorage.setItem('username', username);
         localStorage.setItem('token', data.token);
         console.log('User signed up successfully');
-        this.router.navigate(['/dashboard']);
+        // this.router.navigate(['/dashboard']);
+        this.selectedIndex = 0;
+        // this.cdr.markForCheck();
       } else {
         console.error('Signup failed:', data.message || 'Unknown error');
       }
-      this.router.navigate(['/dashboard']);
+      // this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Sign-up failed:', error);
     }

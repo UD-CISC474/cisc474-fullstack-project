@@ -48,21 +48,21 @@ export class DashboardComponent {
       yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
 
-    this.getIndicesValue(yesterday);
+    // this.getIndicesValue(yesterday);
   }
 
-  async getIndicesValue(date: string): Promise<void> {
-    const apiResponse = await lastValueFrom(
-      this.dashboardService.getIndices(date)
-    );
+  // async getIndicesValue(date: string): Promise<void> {
+  //   const apiResponse = await lastValueFrom(
+  //     this.dashboardService.getIndices(date)
+  //   );
 
-    if (apiResponse.success && apiResponse.response) {
-      const response = apiResponse.response;
-      this.nasdaqValue = Number(Number(response.nasdaq?.close).toFixed(2));
-    } else {
-      console.error('Failed to fetch indices data:', apiResponse.message);
-    }
-  }
+  //   if (apiResponse.success && apiResponse.response) {
+  //     const response = apiResponse.response;
+  //     this.nasdaqValue = Number(Number(response.nasdaq?.close).toFixed(2));
+  //   } else {
+  //     console.error('Failed to fetch indices data:', apiResponse.message);
+  //   }
+  // }
 
   async getPortfolioValue(): Promise<void> {
     const response = await lastValueFrom(
