@@ -112,8 +112,8 @@ export class MarketComponent implements OnInit {
       body: JSON.stringify(payload),
     });
     const data = await buyResponse.json();
-
-    if (data.successful) {
+    console.log(data);
+    if (data.message === 'Stock purchase successful.') {
       const totalPrice = Number(
         this.selectedTicker.prices[0].close * amount
       ).toFixed(2);
@@ -145,7 +145,7 @@ export class MarketComponent implements OnInit {
     });
     const data = await sellResponse.json();
 
-    if (data.successful) {
+    if (data.message === 'Stock sale successful.') {
       const totalPrice = Number(
         this.selectedTicker.prices[0].close * amount
       ).toFixed(2);
