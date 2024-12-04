@@ -13,8 +13,8 @@
         (input)="searchQuery = searchQuery.toUpperCase(); clearStocks(searchQuery)"
         aria-label="Search for a stock ticker"
       />
-      <button (click)="searchTicker(searchQuery)" aria-label="Search Stock">
-        Search
+      <button mat-icon-button class="search-button" (click)="searchTicker(searchQuery)" aria-label="Search Stock">
+        <mat-icon>search</mat-icon>
       </button>
     </div>
 

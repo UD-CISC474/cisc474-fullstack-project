@@ -177,9 +177,11 @@ export class ProfileComponent {
           localStorage.setItem('username', username);
           localStorage.setItem('token', data.token);
           console.log('User signed up successfully');
+          alert(`Signed up successfully`);
+
           // this.router.navigate(['/dashboard']);
           this.selectedIndex = 0;
-          // this.cdr.markForCheck();
+          this.cdr.markForCheck();
         }else {
         console.error('Signup failed:', data.message || 'Unknown error');
         alert(`Signup failed: ${data.message}`);
