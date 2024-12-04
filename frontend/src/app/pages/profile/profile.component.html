@@ -6,6 +6,10 @@
     <mat-tab-group dynamicHeight [(selectedIndex)]="selectedIndex" (selectedTabChange)="onTabChange($event)">
       <mat-tab label="Login">
         <form class="form-container">
+          <div id="login-error-message" class="error-message" style="display: none;">
+            <span id="error-header">Login Failed</span><br><br>
+            <span id="login-error-message-text"></span>
+          </div>
           <mat-form-field appearance="outline">
             <mat-label>Username</mat-label>
             <input
@@ -60,6 +64,10 @@
       <mat-tab label="Sign-Up">
         <div class="signup-container">
           <form class="form-container">
+            <div id="signup-error-message" class="error-message" style="display: none;">
+              <span id="error-header">Sign-Up Failed</span><br><br>
+              <span id="signup-error-message-text"></span>
+            </div>
             <mat-form-field appearance="outline">
               <mat-label>Username</mat-label>
               <input

@@ -73,13 +73,15 @@ export class ProfileComponent {
     if (event.index === 0) {
       this.loginUsername.reset();
       this.loginPassword.reset();
-      // window.localStorage.clear();
-      console.log(localStorage.length)
     } else if (event.index === 1) {
       this.signupUsername.reset();
       this.signupPassword.reset();
       this.confirmPassword.reset();
     }
+    const loginErrorMessage = document.getElementById('login-error-message')! as HTMLElement;
+    const signupErrorMessage = document.getElementById('signup-error-message')! as HTMLElement;
+    loginErrorMessage.style.display = 'none';
+    signupErrorMessage.style.display = 'none';
   }
 
   // Validates if signup password and confirm password match
@@ -113,6 +115,9 @@ export class ProfileComponent {
       const username = `${this.loginUsername.value}`;
       const password = this.loginPassword.value!;
 
+      const errorMessage = document.getElementById('login-error-message')! as HTMLElement;
+      const errorMessageText = document.getElementById('login-error-message-text') as HTMLElement;
+
       const response = await fetch('http://localhost:3000/api/login', {
         headers,
         method: 'POST',
@@ -124,7 +129,8 @@ export class ProfileComponent {
       if (response.ok) {
         if (!data.valid) {
           console.error('Login failed:', data.message || 'Unknown error');
-          alert(`Login failed: ${data.message}`);
+          errorMessageText.textContent = data.message;
+          errorMessage.style.display = 'block';
         }else {
           localStorage.setItem('username', username);
         localStorage.setItem('token', data.token);
@@ -165,6 +171,10 @@ export class ProfileComponent {
       const username = `${this.signupUsername.value}`;
       const password = this.signupPassword.value!;
 
+      const errorMessage = document.getElementById('signup-error-message')! as HTMLElement;
+      const errorMessageText = document.getElementById('signup-error-message-text') as HTMLElement;
+
+
       const response = await fetch('http://localhost:3000/api/create-account', {
         headers,
         method: 'POST',
@@ -184,7 +194,9 @@ export class ProfileComponent {
           this.cdr.markForCheck();
         }else {
         console.error('Signup failed:', data.message || 'Unknown error');
-        alert(`Signup failed: ${data.message}`);
+        // alert(`Signup failed: ${data.message}`);
+        errorMessageText.textContent = data.message;
+        errorMessage.style.display = 'block';
       }
       } 
       // this.router.navigate(['/dashboard']);
