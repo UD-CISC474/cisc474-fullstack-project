@@ -3,6 +3,7 @@ import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { MarketComponent } from './pages/market/market.component';
 
 export const routes: Routes = [
+  // change redirect to /profile when auth is integrated
   { path: '', redirectTo: '/profile', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   {

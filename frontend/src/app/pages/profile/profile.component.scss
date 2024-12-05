@@ -4,8 +4,18 @@
   align-items: center;
   height: 89vh;
   background-color: #f0f2f5;
+  flex-direction: column
+}
+.site-title {
+  text-align: center;
+  margin-bottom: 80px;
 }
 
+.site-title h1 {
+  font-size: 5rem;
+  font-weight: bold;
+  color: #3f51b5;
+}
 .login-container {
   display: flex;
   flex-direction: column;
@@ -15,6 +25,31 @@
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+}
+
+.error-message {
+  display: block;
+  align-self: center;
+  justify-content: center;
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  margin-bottom: 25px;
+  padding-top: 20px;
+  padding-left: 25px;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  width: 80%;
+  text-align: left;
+  font-size: 16px;
+  white-space: pre-line
+}
+
+.error-message #error-header {
+  font-size: 2rem !important;
+  margin-bottom: 15px !important;
+  font-weight: 500;
 }
 
 mat-form-field:first-child {
@@ -34,6 +69,8 @@ mat-form-field {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 20px;
+
 }
 
 .login-btn {

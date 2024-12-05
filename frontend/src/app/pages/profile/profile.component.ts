@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import {
   FormControl,
   Validators,
@@ -10,15 +10,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  Auth,
-  browserLocalPersistence,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  setPersistence,
-  signInWithEmailAndPassword,
-} from '@angular/fire/auth';
-import { Database, ref, set } from '@angular/fire/database';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, signal } from '@angular/core';
 import { merge } from 'rxjs';
@@ -55,22 +46,10 @@ export class ProfileComponent {
   signupPassword = new FormControl('', [Validators.required]);
   confirmPassword = new FormControl('', [Validators.required]);
 
-  // Constructor to inject Firebase Auth and Database services
-  constructor(
-    private auth: Auth,
-    private db: Database,
-    private router: Router
-  ) {
-    // Listen for authentication state changes
-    onAuthStateChanged(this.auth, (user) => {
-      if (user) {
-        console.log('User is authenticated:', user);
-        this.router.navigate(['/dashboard']); // Navigate to dashboard if authenticated
-      } else {
-        console.log('No user authenticated');
-      }
-    });
+  selectedIndex = 0;
 
+  // Constructor to inject Firebase Auth and Database services
+  constructor(private router: Router, private cdr: ChangeDetectorRef) {
     // Listen for changes in confirmPassword to validate password matching
     merge(this.confirmPassword.statusChanges, this.confirmPassword.valueChanges)
       .pipe(takeUntilDestroyed())
@@ -99,6 +78,10 @@ export class ProfileComponent {
       this.signupPassword.reset();
       this.confirmPassword.reset();
     }
+    const loginErrorMessage = document.getElementById('login-error-message')! as HTMLElement;
+    const signupErrorMessage = document.getElementById('signup-error-message')! as HTMLElement;
+    loginErrorMessage.style.display = 'none';
+    signupErrorMessage.style.display = 'none';
   }
 
   // Validates if signup password and confirm password match
@@ -126,11 +109,37 @@ export class ProfileComponent {
     }
 
     try {
-      const email = `${this.loginUsername.value}@example.com`;
+      const headers = new Headers();
+      headers.append('Content-Type', 'application/json');
+
+      const username = `${this.loginUsername.value}`;
       const password = this.loginPassword.value!;
-      await signInWithEmailAndPassword(this.auth, email, password);
-      console.log('User logged in successfully');
-      this.router.navigate(['/dashboard']);
+
+      const errorMessage = document.getElementById('login-error-message')! as HTMLElement;
+      const errorMessageText = document.getElementById('login-error-message-text') as HTMLElement;
+
+      const response = await fetch('http://localhost:3000/api/login', {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      console.log(data)
+      if (response.ok) {
+        if (!data.valid) {
+          console.error('Login failed:', data.message || 'Unknown error');
+          errorMessageText.textContent = data.message;
+          errorMessage.style.display = 'block';
+        }else {
+          localStorage.setItem('username', username);
+        localStorage.setItem('token', data.token);
+        console.log('User logged in successfully!');
+        console.log('token:' + localStorage.getItem('token'))
+        this.router.navigate(['/dashboard']);
+        }
+        
+      }
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -156,24 +165,41 @@ export class ProfileComponent {
     }
 
     try {
-      const email = `${this.signupUsername.value}@example.com`;
-      const password = this.signupPassword.value!;
-      const userCredential = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
+      const headers = new Headers();
+      headers.append('Content-Type', 'application/json');
 
-      const userId = userCredential.user.uid;
-      // Store user information in Firebase Realtime Database
-      await set(ref(this.db, 'users/' + userId), {
-        username: this.signupUsername.value,
-        portfolio: {},
-        currency: 10000,
+      const username = `${this.signupUsername.value}`;
+      const password = this.signupPassword.value!;
+
+      const errorMessage = document.getElementById('signup-error-message')! as HTMLElement;
+      const errorMessageText = document.getElementById('signup-error-message-text') as HTMLElement;
+
+
+      const response = await fetch('http://localhost:3000/api/create-account', {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
       });
 
-      console.log('User signed up successfully');
-      this.router.navigate(['/dashboard']);
+      const data = await response.json();
+      if (response.ok) {
+        if (data.valid) {
+          localStorage.setItem('username', username);
+          localStorage.setItem('token', data.token);
+          console.log('User signed up successfully');
+          alert(`Signed up successfully`);
+
+          // this.router.navigate(['/dashboard']);
+          this.selectedIndex = 0;
+          this.cdr.markForCheck();
+        }else {
+        console.error('Signup failed:', data.message || 'Unknown error');
+        // alert(`Signup failed: ${data.message}`);
+        errorMessageText.textContent = data.message;
+        errorMessage.style.display = 'block';
+      }
+      } 
+      // this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Sign-up failed:', error);
     }

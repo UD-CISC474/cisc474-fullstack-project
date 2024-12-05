@@ -25,51 +25,55 @@ const getAuthentication = (req: express.Request): Promise<AuthorizedUser> => {
   const { username } = req.body;
   const token = req.headers.authorization || "";
   return new Promise((resolve, reject) => {
-
     // Query the Firebase for the current token
     const ref = database.ref(`/users/${username}/token`);
-    ref.once('value', (snap) => {
+    ref.once("value", (snap) => {
       const dbToken = snap.val();
-      
+
       // Make sure the token exists in Firebase
-      if(!snap.exists() || dbToken === "") {
+      if (!snap.exists() || dbToken === "") {
         // token does not exist in database
         resolve({ username, token: "", valid: false });
         return;
       }
 
       // Make sure the provided token matches the one in the DB
-      if(token !== dbToken) {
+      if (token !== dbToken) {
         resolve({ username, token: "", valid: false });
       } else {
         resolve({ username, token, valid: true });
       }
     });
-  })
-}
+  });
+};
 
 // Used to login users
 const login = ({
   username,
-  password
+  password,
 }: AuthCredentials): Promise<AuthorizedUser> => {
   return new Promise((resolve, reject) => {
     // Query the firebase for user password hash
     const ref = database.ref(`/users/${username}/password`);
-    ref.once('value', (snap) => {
+    ref.once("value", (snap) => {
       const dbHash = snap.val();
-      
+
       // Make sure the hash exists in the Firebase
-      if(!snap.exists() || dbHash === "") {
+      if (!snap.exists() || dbHash === "") {
         // hash does not exist in database
-        resolve({ username, token: "", valid: false });
+        resolve({
+          username,
+          token: "",
+          valid: false,
+          message: "User does not exist.",
+        });
         return;
       }
 
       // Check if the hash matches
-      if(compareSync(password, dbHash) === true) {
+      if (compareSync(password, dbHash) === true) {
         // Generate a token for the user session
-        const token = randomBytes(32).toString('base64');
+        const token = randomBytes(32).toString("base64");
 
         // Store token in the Firebase
         const tokenRef = database.ref(`/users/${username}/token`);
@@ -79,64 +83,77 @@ const login = ({
         resolve({ username, token, valid: true });
       } else {
         // Password is incorrect
-        resolve({ username, token: "", valid: false });
+        resolve({
+          username,
+          token: "",
+          valid: false,
+          message: "Incorrect password.",
+        });
       }
-    })
-  })
-}
+    });
+  });
+};
 
 // Logs the current user out
-const logout = ({
-  username
-}: TokenCredentials): AuthorizedUser => {
+const logout = ({ username }: TokenCredentials): AuthorizedUser => {
   const ref = database.ref(`/users/${username}/token`);
   ref.set("");
-  
+
   return {
     username: "",
     token: "",
     valid: false,
-    message: "Signed out"
-  }
-}
+    message: "Signed out",
+  };
+};
 
 // Used to create a new user account
 const createAccount = ({
   username,
-  password
+  password,
 }: AuthCredentials): Promise<AuthorizedUser> => {
   return new Promise((resolve, reject) => {
     // check if the username exists in the Firebase
     const ref = database.ref(`/users/${username}`);
-    ref.once('value', (snap) => {
+    ref.once("value", (snap) => {
       // const existingUser = snap.val();
 
-      if(snap.exists()) {
+      if (snap.exists()) {
         // user already exists
-        resolve({ username, token: "", valid: false, message: "User already exists." });
+        resolve({
+          username,
+          token: "",
+          valid: false,
+          message: "User already exists.",
+        });
         return;
       }
 
-      if(password.length < 4) {
+      if (password.length < 4) {
         // provided password is too short
-        resolve({ username, token: "", valid: false, message: "Password too short." });
+        resolve({
+          username,
+          token: "",
+          valid: false,
+          message: "Password too short.",
+        });
+        return;
       }
 
       const passwordHash = hashSync(password, 8);
-      const token = randomBytes(32).toString('base64');
+      const token = randomBytes(32).toString("base64");
       ref.set({
         token,
         password: passwordHash,
         portfolio: {
-          cash: 10000
-        }
+          cash: 10000,
+        },
       });
 
       resolve({ username, token, valid: true });
-    })
+    });
+  });
+};
 
-  })
-}
-
-export { getAuthentication, login, logout, createAccount }
-export type { AuthorizedUser }
+export { getAuthentication, login, logout, createAccount };
+export type { AuthorizedUser };

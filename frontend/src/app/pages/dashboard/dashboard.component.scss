@@ -15,30 +15,44 @@
       font-size: 1.2rem;
       font-weight: bold;
       color: #333;
+      border: 2px solid black;
+      border-radius: 12px;
 
       &.nasdaq-tile {
         background-color: lightblue;
         color: #003366;
+        border: 2px solid black;
+        border-radius: 12px;
       }
 
       &.portfolio-value-tile {
         background-color: #ddbdf1;
         color: #4a004a;
+        border: 2px solid black;
+        border-radius: 12px;
       }
 
       &.highest-earner-tile {
         background-color: lightgreen;
         color: #006400;
+        border: 2px solid black;
+        border-radius: 12px;
       }
 
       &.biggest-loser-tile {
         background-color: lightpink;
         color: #8b0000;
+        border: 2px solid black;
+        border-radius: 12px;
       }
 
       &.news-tile {
         background-color: #ddbdf1;
         color: #333;
+        font-size: 0.9rem; /* Make the font smaller */
+        font-weight: normal; /* Remove bold styling */
+        border: 2px solid black;
+        border-radius: 12px;
       }
     }
   }
@@ -54,7 +68,7 @@
       font-size: 1rem;
 
       &.news-tile {
-        padding: 5px;
+        font-size: 0.8rem; /* Slightly smaller font on smaller screens */
       }
     }
   }
@@ -64,6 +78,10 @@
   .dashboard-grid {
     mat-grid-tile {
       font-size: 0.9rem;
+
+      &.news-tile {
+        font-size: 0.7rem; /* Further reduce font size on very small screens */
+      }
     }
   }
 }

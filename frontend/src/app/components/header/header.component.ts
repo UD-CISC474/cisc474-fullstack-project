@@ -1,22 +1,25 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [MatToolbarModule, MatTabsModule, MatButtonModule, RouterLink],
+  imports: [MatToolbarModule, MatTabsModule, MatButtonModule, RouterLink, CommonModule, RouterModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
   selectedIndex = 0;
+  isLoggedIn = false;
 
   constructor(private router: Router) {}
 
   ngOnInit() {
+    this.checkLoginStatus();
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         if (event.urlAfterRedirects === '/dashboard') {
@@ -28,6 +31,12 @@ export class HeaderComponent implements OnInit {
         }
       }
     });
+  }
+
+  checkLoginStatus() {
+    const token = localStorage.getItem('token');
+    console.log(token)
+    this.isLoggedIn = !!token;
   }
 
   onTabChange(index: number) {
@@ -44,5 +53,33 @@ export class HeaderComponent implements OnInit {
   onLogin() {
     // this.selectedIndex = 3;
     this.router.navigate(['/profile']);
+  }
+
+  async onLogout() {
+    try {
+      const username = localStorage.getItem('username');
+
+      const headers = new Headers();
+      headers.append('Content-Type', 'application/json');
+
+      const logoutResponse = await fetch('http://localhost:3000/api/logout', {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({ username }),
+      });
+
+      const logoutData = await logoutResponse.json();
+      if (logoutData.token === '') {
+        console.log('Logout succesful!');
+        localStorage.removeItem('username');
+        localStorage.removeItem('token');
+        this.isLoggedIn = false;
+        this.router.navigate(['/profile']);
+      } else {
+        console.error('Logout unsuccessful. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
   }
 }

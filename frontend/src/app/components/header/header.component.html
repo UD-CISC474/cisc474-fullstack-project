@@ -1,12 +1,16 @@
 <mat-toolbar>
-    <span>Super Trader</span>
-    <mat-tab-group [(selectedIndex)]="selectedIndex" (selectedIndexChange)="onTabChange($event)">
-        <mat-tab label="Dashboard" routerLink="/dashboard"></mat-tab>
-        <mat-tab label="Portfolio"></mat-tab>
-        <mat-tab label="Market"></mat-tab>
-    </mat-tab-group>
-    <span class="spacer"></span>
-    <div class="login-btn">
-        <button mat-raised-button (click)="onLogin()">login</button>
-    </div>
+  <span>Super Trader</span>
+  <mat-tab-group
+    [(selectedIndex)]="selectedIndex"
+    (selectedIndexChange)="onTabChange($event)"
+  >
+    <mat-tab label="Dashboard" routerLink="/dashboard"></mat-tab>
+    <mat-tab label="Portfolio"></mat-tab>
+    <mat-tab label="Market"></mat-tab>
+  </mat-tab-group>
+  <span class="spacer"></span>
+  <div class="auth-buttons">
+    <button mat-raised-button *ngIf="isLoggedIn" (click)="onLogout()">Logout</button>
+    <button mat-raised-button *ngIf="!isLoggedIn" (click)="onLogin()">Login</button>
+  </div>
 </mat-toolbar>
