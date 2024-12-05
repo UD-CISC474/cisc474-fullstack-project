@@ -7,7 +7,7 @@ import {
   logout as authLogout,
   createAccount as authCreateAccount
 } from "./auth";
-import { getHoldings } from "./portfolio";
+import { getHoldings, getTransactions } from "./portfolio";
 
 
 // HELPER FUNCTIONS -- DO NOT EXPORT THESE
@@ -42,11 +42,11 @@ const getPortfolio = async (req: Req, res: Res): Promise<void> => {
 
   if(auth.valid) {
     res.send({
-      username: auth.valid,
+      username: auth.username,
       valid: auth.valid,
       success: true,
       availableCash: 0,
-      transactions: [],
+      transactions: await getTransactions(auth.username),
       holdings: await getHoldings(auth.username)
     });
   } else {

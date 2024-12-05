@@ -95,12 +95,12 @@ class Tracker {
   }
 
   public async getHoldings(): Promise<Holdings> {
-    const length = this.dates.length;
     await this.queryStocks();
     this.resolveTransactions();
+    const length = this.dates.length;
 
     // Calculate portfolio value graph
-    const portfolioValue = new Array<number>(length).fill(0);
+    const portfolioValue = new Array(length).fill(0);
     for(let i = 0; i < length; i++) {
       for(const [key, value] of Object.entries(this.dailyHoldings)) {
         if(key === "cash") {
@@ -114,7 +114,7 @@ class Tracker {
     const stocks = new Array();
     for(const [key, value] of Object.entries(this.dailyHoldings)) {
       if(key !== "cash") {
-        stocks.push({
+        if(value[length - 1] > 0) stocks.push({
           ticker: key,
           numberOfShares: value[length - 1],
           currentSharePrice: this.dailyPrices[key][length - 1],
