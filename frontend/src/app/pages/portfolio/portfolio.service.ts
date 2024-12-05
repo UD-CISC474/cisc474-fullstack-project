@@ -13,4 +13,11 @@ export class PortfolioService {
     const params = new HttpParams().set('userId', userId);
     return this.http.get(apiUrl, { params });
   }
+
+  getCurrency(userId: string): Observable<any> {
+    const apiUrl = 'http://localhost:3000/api/user';
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get(apiUrl, { params });
+  }
+
 }

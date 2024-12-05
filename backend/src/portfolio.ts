@@ -50,27 +50,83 @@ class Tracker {
     }
   }
 
+  // private async queryStocks() {
+  //   // Query all the stocks on polygon
+  //   const tickers = Array.from(this.tickerSet.values());
+  //   const companyResponses = await Promise.all(tickers.map(ticker => queryCompanyData({
+  //       ticker,
+  //       from: this.epoch.toISOString().substring(0, 10),
+  //       to: this.termination.toISOString().substring(0, 10),
+  //       interval: "day"
+  //     })));
+
+  //   // Create array of all responded dates
+  //   this.dates = companyResponses[0].prices.map(priceObj => {
+  //     const timestamp = new Date(priceObj.openTimestamp);
+  //     return timestamp.toISOString().substring(0, 10)
+  //   });
+
+  //   // Populate daily prices of each ticker
+  //   for(const company of companyResponses) {
+  //     this.dailyPrices[company.ticker] = company.prices.map(price => price.close);
+  //   }
+  // }
+
+
   private async queryStocks() {
-    // Query all the stocks on polygon
-    const tickers = Array.from(this.tickerSet.values());
-    const companyResponses = await Promise.all(tickers.map(ticker => queryCompanyData({
-        ticker,
-        from: this.epoch.toISOString().substring(0, 10),
-        to: this.termination.toISOString().substring(0, 10),
-        interval: "day"
-      })));
-
-    // Create array of all responded dates
-    this.dates = companyResponses[0].prices.map(priceObj => {
-      const timestamp = new Date(priceObj.openTimestamp);
-      return timestamp.toISOString().substring(0, 10)
-    });
-
-    // Populate daily prices of each ticker
-    for(const company of companyResponses) {
-      this.dailyPrices[company.ticker] = company.prices.map(price => price.close);
+    try {
+      // Query all the stocks on polygon
+      const tickers = Array.from(this.tickerSet.values());
+      const companyResponses = await Promise.all(tickers.map(ticker => queryCompanyData({
+          ticker,
+          from: this.epoch.toISOString().substring(0, 10),
+          to: this.termination.toISOString().substring(0, 10),
+          interval: "day"
+        })));
+  
+      // Create array of all responded dates
+      if (companyResponses.length === 0 || !companyResponses[0].prices) {
+        console.error('No price data found in companyResponses:', companyResponses);
+        return;
+      }
+  
+      this.dates = companyResponses[0].prices.map(priceObj => {
+        const timestamp = new Date(priceObj.openTimestamp);
+  
+        // Additional logging to debug the invalid timestamp
+        if (!priceObj.openTimestamp) {
+          console.error('openTimestamp is missing or undefined for:', priceObj);
+        }
+  
+        if (isNaN(timestamp.getTime())) {
+          console.error('Invalid date value:', priceObj.openTimestamp);
+          return null; // Return null for invalid timestamps
+        }
+  
+        return timestamp.toISOString().substring(0, 10);
+      }).filter(date => date !== null); // Remove invalid dates from the array
+  
+      // Populate daily prices of each ticker
+      for (const company of companyResponses) {
+        if (!company.prices) {
+          console.error(`No prices found for ticker: ${company.ticker}`);
+          continue;
+        }
+  
+        this.dailyPrices[company.ticker] = company.prices.map(price => {
+          if (typeof price.close === 'undefined' || price.close === null) {
+            console.error('Price close is undefined or null for:', price);
+            return 0; // Set default value for problematic price data
+          }
+          return price.close;
+        });
+      }
+    } catch (error) {
+      console.error('Error in queryStocks:', error);
     }
   }
+  
+  
 
   private resolveTransactions() {
     // zero all except cash
@@ -134,23 +190,53 @@ class Tracker {
 }
   
 
+// const getTransactions = (username: string): Promise<Transaction[]> => {
+//   return new Promise((resolve, reject) => {
+//     const ref = database.ref(`/users/${username}/transactions`);
+//     ref.once('value', (snap) => {
+//       resolve(snap.exists() ? Object.values(snap.val()) : []);
+//     });
+//   });
+// }
+
 const getTransactions = (username: string): Promise<Transaction[]> => {
   return new Promise((resolve, reject) => {
-    const ref = database.ref(`/users/${username}/transactions`);
+    const ref = database.ref(`/users/${username}/portfolio/transactions`);
     ref.once('value', (snap) => {
       resolve(snap.exists() ? Object.values(snap.val()) : []);
     });
   });
 }
 
+
+// const getHoldings = (username: string): Promise<Holdings> => {
+//   return new Promise((resolve, reject) => {
+//     const ref = database.ref(`/users/${username}`);
+//     ref.once('value', async (snap) => {
+//       if(snap.exists()) {
+//         const data = snap.val();
+//         const { cash, startingCash } = data.portfolio;
+//         const transactions: Transaction[] = Object.values(data.transactions);
+
+//         const tracker = new Tracker(startingCash, transactions);
+//         const result = await tracker.getHoldings();
+
+//         resolve(result);
+//       } else {
+//         reject();
+//       }
+//     })
+//   });
+// }
+
 const getHoldings = (username: string): Promise<Holdings> => {
   return new Promise((resolve, reject) => {
-    const ref = database.ref(`/users/${username}`);
+    const ref = database.ref(`/users/${username}/portfolio`);
     ref.once('value', async (snap) => {
-      if(snap.exists()) {
+      if (snap.exists()) {
         const data = snap.val();
-        const { cash, startingCash } = data.portfolio;
-        const transactions: Transaction[] = Object.values(data.transactions);
+        const { cash, startingCash } = data;
+        const transactions: Transaction[] = Object.values(data.transactions || {});
 
         const tracker = new Tracker(startingCash, transactions);
         const result = await tracker.getHoldings();
@@ -159,9 +245,10 @@ const getHoldings = (username: string): Promise<Holdings> => {
       } else {
         reject();
       }
-    })
+    });
   });
 }
+
 
 export {
   getTransactions,

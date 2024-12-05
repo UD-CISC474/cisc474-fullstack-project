@@ -99,24 +99,72 @@ const getStock = async (req: Req, res: Res): Promise<void> => {
 };
 
 // Express route for getting all information about a user's portfolio
-const getPortfolio = async (req: Req, res: Res): Promise<void> => {
-  const auth = await getAuthentication(req);
+// const getPortfolio = async (req: Req, res: Res): Promise<void> => {
+//   const auth = await getAuthentication(req);
 
-  if(auth.valid) {
+//   if(auth.valid) {
+//     res.send({
+//       username: auth.username,
+//       valid: auth.valid,
+//       success: true,
+//       availableCash: 0,
+//       transactions: await getTransactions(auth.username),
+//       holdings: await getHoldings(auth.username)
+//     });
+//   } else {
+//     res.send(auth);
+//   }
+
+//   //res.send(`Token is: ${token}; Username is: ${username}`);
+// }
+
+const getPortfolio = async (req: Req, res: Res): Promise<void> => {
+  try {
+    const auth = await getAuthentication(req);
+
+    if (!auth.valid) {
+      // Send an error response if authentication failed
+      res.status(401).send({
+        success: false,
+        message: "Invalid authentication.",
+      });
+      return;
+    }
+
+    // Fetch transactions and holdings concurrently
+    const [transactions, holdings] = await Promise.all([
+      getTransactions(auth.username),
+      getHoldings(auth.username),
+    ]);
+
+    // Check if holdings or transactions are missing or empty
+    if (!holdings || !transactions) {
+      res.status(404).send({
+        success: false,
+        message: "Holdings or transactions not found.",
+      });
+      return;
+    }
+
+    // Respond with portfolio information
     res.send({
       username: auth.username,
       valid: auth.valid,
       success: true,
-      availableCash: 0,
-      transactions: await getTransactions(auth.username),
-      holdings: await getHoldings(auth.username)
+      availableCash: holdings.cash || 0,
+      transactions: transactions,
+      holdings: holdings,
     });
-  } else {
-    res.send(auth);
+  } catch (error) {
+    // Handle errors, e.g., issues connecting to the database, internal server issues, etc.
+    console.error("Error in getPortfolio function:", error);
+    res.status(500).send({
+      success: false,
+      message: "An error occurred while retrieving portfolio information.",
+    });
   }
+};
 
-  //res.send(`Token is: ${token}; Username is: ${username}`);
-}
 
 // Express route for purchasing a stock
 const buyStock = async (req: Req, res: Res): Promise<void> => {

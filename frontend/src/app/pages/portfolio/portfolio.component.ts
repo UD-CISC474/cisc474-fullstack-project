@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
-import { MarketService } from '../market/market.service';
 import { PortfolioService } from './portfolio.service';
 import { Router } from '@angular/router';
 import { Stock, Transaction } from '../../interfaces';
+import OpenAI from 'openai';
+import { OPENAI_API_KEY } from '../../../../environment';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-portfolio',
@@ -21,17 +24,13 @@ export class PortfolioComponent {
   availableCoins: number = 0;
   gainLoss = 0;
   holdings: Stock[] = [];
+  feedback: string = '';
 
   constructor(
-    private marketService: MarketService,
+    private http: HttpClient,
     private router: Router,
     private portfolioService: PortfolioService
-  ) {
-    // this.getPortfolioValue();
-    // this.loadTransactions();
-    // this.loadHoldings();
-    // this.loadAvailableCoins();
-  }
+  ) {}
 
   ngOnInit(): void {
     const username = localStorage.getItem('username');
@@ -39,13 +38,89 @@ export class PortfolioComponent {
     if (username && token) {
       this.userId = username;
       this.sessionToken = token;
+      this.loadPortfolioData();
+    }
+  }
+
+  async loadPortfolioData(): Promise<void> {
+    try {
+      console.log('Session Token:', this.sessionToken);
+
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: `${this.sessionToken}`,
+      });
+
+      const response = await firstValueFrom(
+        this.http.post<any>(
+          'http://localhost:3000/api/portfolio',
+          { username: this.userId },
+          { headers }
+        )
+      );
+
+      if (response.success) {
+        this.availableCoins = response.availableCash;
+        this.transactions = response.transactions;
+        this.holdings = response.holdings;
+        this.portfolioValue = this.holdings.reduce(
+          (acc, holding) => acc + holding.total,
+          this.availableCoins
+        );
+        this.generateFeedback();
+      } else {
+        console.error('Failed to load portfolio data:', response.message);
+      }
+    } catch (error) {
+      console.error('Error fetching portfolio data:', error);
+    }
+  }
+
+  async generateFeedback() {
+    try {
+      const openai = new OpenAI({
+        apiKey: OPENAI_API_KEY,
+        dangerouslyAllowBrowser: true,
+      });
+
+      const holdingsSummary = this.holdings
+        .map(
+          (holding) =>
+            `Ticker: ${holding.stockSymbol}, Shares: ${holding.shares}, Average Price: ${holding.price}`
+        )
+        .join('; ');
+
+      const prompt = `
+        I have a user portfolio with the following details:
+        - Current cash: ${this.availableCoins} USD
+        - Portfolio value: ${this.portfolioValue} USD
+        - Holdings: ${holdingsSummary}
+        Can you provide a brief analysis of this portfolio, along with any suggestions or feedback?
+      `;
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an experienced investment advisor.',
+          },
+          { role: 'user', content: prompt },
+        ],
+      });
+
+      const response = completion.choices[0].message.content;
+      this.feedback = response || 'No feedback available at the moment.';
+    } catch (error) {
+      console.error('Error generating feedback from OpenAI:', error);
+      this.feedback = 'Failed to generate feedback.';
     }
   }
 
   async loadAvailableCoins(): Promise<void> {
     try {
       const response: any = await firstValueFrom(
-        this.marketService.getCurrency(this.userId)
+        this.portfolioService.getCurrency(this.userId)
       );
 
       this.availableCoins = Number(response.currency.currency.toFixed(2));
@@ -129,28 +204,5 @@ export class PortfolioComponent {
       this.transactions = [];
     }
   }
-
-  async getPortfolioValue(): Promise<void> {
-    try {
-      const response = await firstValueFrom(
-        this.marketService.getUserStocks(this.userId)
-      );
-
-      const userStocks: { [key: string]: Transaction } = response.stocks || {};
-      const userStocksArray = Object.values(userStocks);
-
-      let totalValue = 0;
-      if (userStocksArray && userStocksArray.length > 0) {
-        userStocksArray.forEach((stock) => {
-          totalValue += stock.price * stock.shares;
-        });
-      }
-
-      this.portfolioValue = Number(totalValue.toFixed(2));
-      console.log(`Portfolio Value: ${this.portfolioValue}`);
-    } catch (error) {
-      console.error('Failed to fetch portfolio value:', error);
-      this.portfolioValue = 0;
-    }
-  }
 }
+
