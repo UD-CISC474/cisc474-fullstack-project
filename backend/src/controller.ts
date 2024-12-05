@@ -89,11 +89,16 @@ const exchangeStock = async ({
 
 // Express route for retrieving price information about a stock
 const getStock = async (req: Req, res: Res): Promise<void> => {
-  const { ticker, start, end } = req.params;
+  const { ticker, start, end, interval } = req.params;
+  const validIntervals =["day", "hour", "half-hour", "minute"] as const;
+  const sanitizedInterval = validIntervals.includes(interval as typeof validIntervals[number])
+    ? (interval as "day" | "hour" | "half-hour" | "minute")
+    : "day";
   const stockData = await queryCompanyData({
     ticker,
     from: start,
     to: end,
+    interval: sanitizedInterval,
   });
   res.send(stockData);
 };

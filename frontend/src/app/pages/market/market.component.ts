@@ -51,7 +51,7 @@ export class MarketComponent implements OnInit {
       this.sessionToken = token;
     }
 
-    if (dayjs().day().toString() === 'Monday') {
+    if (dayjs().day().toString() === '1') {
       this.yesterday = dayjs().subtract(3, 'day').format('YYYY-MM-DD');
     } else {
       this.yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
@@ -73,7 +73,7 @@ export class MarketComponent implements OnInit {
     if (period === '5D') {
       startDate = dayjs().subtract(5, 'day').format('YYYY-MM-DD');
     } else if (period === '1M') {
-      startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
+      startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD')
     } else if (period === '6M') {
       startDate = dayjs().subtract(180, 'day').format('YYYY-MM-DD');
     } else if (period === '1Y') {
@@ -160,9 +160,8 @@ export class MarketComponent implements OnInit {
     startDate = this.yesterday
   ): Promise<CompanyResponse | null> {
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/stock/${ticker}/${startDate}`
-      );
+      const url = `http://localhost:3000/api/stock/${ticker}/${startDate}`;
+      const response = await fetch(url);
       const stockData = await response.json();
       if (stockData.successful) {
         this.stocks = [stockData];
