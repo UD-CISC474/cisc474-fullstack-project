@@ -68,11 +68,11 @@ const queryCompanyData = async ({
   ticker,
   from = getLastWeekday().toISOString().substring(0, 10),
   to = getLastWeekday().toISOString().substring(0, 10),
-  interval = "half-hour",
+  interval = "day",
 }: CompanyQueryParams): Promise<CompanyResponse> => {
-  const timespan = interval === "half-hour" ? "minute" : interval;
-  const multiplier = interval === "half-hour" ? 30 : 1;
-
+  const startDate = new Date(from);
+  const timespan = !(getLastWeekday().getTime() - startDate.getTime() > (86400000 * 10)) ? "minute" : interval;
+  const multiplier = interval === "day" ? 1 : 30;
   const data = await fetch(
     `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}`,
     {

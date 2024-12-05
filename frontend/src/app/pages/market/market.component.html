@@ -29,7 +29,7 @@
         role="button"
       >
         <span class="stock-name">{{ ticker.ticker }}</span>
-        <span class="stock-price">{{ ticker.prices[0].close }} STC</span>
+        <span class="stock-price">{{ ticker.prices[ticker.prices.length-1].close }} STC</span>
       </div>
     </div>
   </div>
@@ -42,7 +42,7 @@
         <h3>{{ selectedTicker.ticker || "Select a Stock" }}</h3>
         <p>
           Current Price:
-          <span> {{ selectedTicker.prices[0].close || "Loading" }} STC </span>
+          <span> {{ selectedTicker.prices[selectedTicker.prices.length-1].close || "Loading" }} STC </span>
         </p>
         <ng-template #noSelection>
           <span>Loading...</span>
