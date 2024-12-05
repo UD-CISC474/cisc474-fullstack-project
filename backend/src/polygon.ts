@@ -117,4 +117,5 @@ const queryCompanyData = async ({
 
 export {
   queryCompanyData,
+  getLastWeekday
 };
