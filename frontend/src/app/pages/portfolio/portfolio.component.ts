@@ -202,6 +202,7 @@ export class PortfolioComponent {
       }
 
       this.portfolioValue = Number(totalValue.toFixed(2));
+      this.portfolioService.setPortfolioValue(totalValue);
     } catch (error) {
       console.error('Failed to fetch portfolio value:', error);
       this.portfolioValue = 0;

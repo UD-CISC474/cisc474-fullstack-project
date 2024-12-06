@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '../../../../environment';
+import { PortfolioService } from '../portfolio/portfolio.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -34,9 +35,10 @@ export class DashboardComponent {
   constructor(
     private marketService: MarketService,
     private router: Router,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private portfolioService: PortfolioService
   ) {
-    //this.getPortfolioValue();
+    // this.getPortfolioValue();
   }
 
   ngOnInit(): void {
@@ -52,6 +54,10 @@ export class DashboardComponent {
     } else {
       yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
+
+    this.portfolioService.portfolioValue$.subscribe((value) => {
+      this.portfolioValue = value;
+    });
 
     this.getNewsFromOpenAI();
   }
@@ -80,5 +86,7 @@ export class DashboardComponent {
     if (responseAsArray) {
       this.recentNews = responseAsArray;
     }
+
+    console.log(responseAsArray)
   }
 }

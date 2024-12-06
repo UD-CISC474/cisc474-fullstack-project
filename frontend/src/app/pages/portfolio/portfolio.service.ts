@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PortfolioService {
+  private portfolioValueSubject = new BehaviorSubject<number>(0);
+
   constructor(private http: HttpClient) {}
 
   getUserStocks(userId: string): Observable<any> {
@@ -25,5 +27,13 @@ export class PortfolioService {
         }
       )
     );
+  }
+
+  get portfolioValue$() {
+    return this.portfolioValueSubject.asObservable();
+  }
+
+  setPortfolioValue(value: number): void {
+    this.portfolioValueSubject.next(value);
   }
 }
