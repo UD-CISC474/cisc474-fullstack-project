@@ -11,6 +11,7 @@
         placeholder="Search for a ticker..."
         [(ngModel)]="searchQuery"
         (input)="searchQuery = searchQuery.toUpperCase(); clearStocks(searchQuery)"
+        (keydown.enter)="searchTicker(searchQuery)"
         aria-label="Search for a stock ticker"
       />
       <button mat-icon-button class="search-button" (click)="searchTicker(searchQuery)" aria-label="Search Stock">

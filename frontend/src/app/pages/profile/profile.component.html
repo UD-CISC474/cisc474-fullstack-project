@@ -5,7 +5,7 @@
   <div class="login-container">
     <mat-tab-group dynamicHeight [(selectedIndex)]="selectedIndex" (selectedTabChange)="onTabChange($event)">
       <mat-tab label="Login">
-        <form class="form-container">
+        <form class="form-container" (keydown.enter)="onLogin()">
           <div id="login-error-message" class="error-message" style="display: none;">
             <span id="error-header">Login Failed</span><br><br>
             <span id="login-error-message-text"></span>
@@ -63,7 +63,7 @@
       </mat-tab>
       <mat-tab label="Sign-Up">
         <div class="signup-container">
-          <form class="form-container">
+          <form class="form-container" (keydown.enter)="onSignUp()">
             <div id="signup-error-message" class="error-message" style="display: none;">
               <span id="error-header">Sign-Up Failed</span><br><br>
               <span id="signup-error-message-text"></span>
