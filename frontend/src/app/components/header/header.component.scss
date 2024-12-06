@@ -1,10 +1,21 @@
 mat-toolbar {
   display: flex;
   align-items: center;
+  margin-top: 10px;
+  background-color: white;
+  border-bottom: 2px solid #dcdcdc;
+
+  .site-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #3f51b5;
+  }
 
   mat-tab-group {
     margin-left: 20px;
     flex-grow: 1;
+    margin-top: 17px;
   }
 
   .spacer {
@@ -18,5 +29,7 @@ mat-toolbar {
 
   button {
     margin: 0;
+    background-color: #3f51b5;
+    color: white; 
   }
 }
