@@ -1,10 +1,23 @@
 mat-toolbar {
   display: flex;
   align-items: center;
+  margin-top: 10px;
+  padding-bottom: 10px;
+  background-color: white;
+  border-bottom: 2px solid #dcdcdc;
+  height: 80px;
+
+  .site-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #3f51b5;
+    padding: 10px;
+  }
 
   mat-tab-group {
     margin-left: 20px;
-    flex-grow: 1;
+    // margin-top: 15px;
   }
 
   .spacer {
@@ -18,5 +31,34 @@ mat-toolbar {
 
   button {
     margin: 0;
+    background-color: #3f51b5;
+    color: white; 
   }
+}
+
+// tabs customization
+::ng-deep .mat-mdc-tab-header .mdc-tab {
+  height: 91px;
+  width: 200px;
+}
+
+::ng-deep .mdc-tab {
+  font-size: 1.1rem !important;
+}
+
+::ng-deep .mat-mdc-tab-group .mdc-tab--active .mdc-tab__text-label {
+  color: #3f51b5 !important;
+  font-weight: bold;
+}
+
+// ::ng-deep .mat-mdc-tab-group .mdc-tab--active {
+//   background-color: #3f51b515;}
+
+::ng-deep .mat-mdc-tab-group .mat-mdc-tab .mat-ripple-element {
+  background-color: #3f51b5;
+}
+
+::ng-deep .mat-mdc-tab-group .mdc-tab--active .mdc-tab-indicator__content--underline {
+  border-width: 5px;
+  border-color: #3f51b5;
 }

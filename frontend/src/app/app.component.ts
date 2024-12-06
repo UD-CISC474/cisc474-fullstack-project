@@ -29,6 +29,7 @@ export class AppComponent implements OnInit {
   }
 
   checkHeaderVisibility(url: string) {
-    this.showHeader = url !== '/profile';
+    const currentURL = url === '/' ? '/profile':url;
+    this.showHeader = currentURL != '/profile';
   }
 }
