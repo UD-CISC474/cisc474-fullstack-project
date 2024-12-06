@@ -13,6 +13,7 @@
   max-height: 80vh;
   overflow-y: auto;
   overflow-x: hidden;
+  margin-top:10px;
 
   h2 {
     font-size: 24px;
@@ -114,6 +115,8 @@
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
+  margin-top:10px;
+
 
   .graph-header {
     background-color: #f1f1f1;
