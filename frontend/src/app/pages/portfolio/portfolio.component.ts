@@ -43,7 +43,6 @@ export class PortfolioComponent {
     this.getPortfolioValue();
     this.loadTransactions();
     this.loadHoldings();
-    // this.loadAvailableCoins();
   }
 
   async loadAvailableCoins(): Promise<void> {
@@ -75,8 +74,8 @@ export class PortfolioComponent {
         const shares = value.numberOfShares || 0;
         const stockSymbol = value.ticker || '';
         const total = (price * shares).toFixed(2);
-        const timestamp = new Date().toISOString().slice(0, 10); 
-  
+        const timestamp = new Date().toISOString().slice(0, 10);
+
         return {
           price,
           shares,
@@ -137,8 +136,8 @@ export class PortfolioComponent {
         const shares = value.numberOfShares || 0;
         const stockSymbol = value.ticker || '';
         const total = (price * shares).toFixed(2);
-        const timestamp = new Date().toISOString().slice(0, 10); 
-  
+        const timestamp = new Date().toISOString().slice(0, 10);
+
         return {
           price,
           shares,
@@ -176,14 +175,15 @@ export class PortfolioComponent {
 
       const userStocks: { [key: string]: any } = response.holdings.stocks || {};
       const userStocksArray = Object.values(userStocks);
+      this.availableCoins = response.availableCash;
 
       const stocksMapped: Transaction[] = userStocksArray.map((value) => {
         const price = value.currentSharePrice || 0;
         const shares = value.numberOfShares || 0;
         const stockSymbol = value.ticker || '';
         const total = (price * shares).toFixed(2);
-        const timestamp = new Date().toISOString().slice(0, 10); 
-  
+        const timestamp = new Date().toISOString().slice(0, 10);
+
         return {
           price,
           shares,
@@ -192,7 +192,6 @@ export class PortfolioComponent {
           total: Number(total),
         };
       });
-
 
       let totalValue = 0;
       if (stocksMapped && stocksMapped.length > 0) {
