@@ -195,7 +195,6 @@ const getPortfolio = async (req: Req, res: Res): Promise<void> => {
 // Express route for purchasing a stock
 const buyStock = async (req: Req, res: Res): Promise<void> => {
   const { username, token, valid } = await getAuthentication(req);
-  console.log(req.body)
 
   if (!valid) {
     res.status(401).send("User could not be authenticated.");
@@ -220,8 +219,6 @@ const buyStock = async (req: Req, res: Res): Promise<void> => {
   }
 
   try {
-    console.log("portfolio")
-
     const portfolio = await exchangeStock({
       username,
       ticker,
@@ -229,8 +226,6 @@ const buyStock = async (req: Req, res: Res): Promise<void> => {
       price,
       type: "buy",
     });
-
-    console.log("portfolio", portfolio)
 
     res.status(200).send({
       message: "Stock purchase successful.",
