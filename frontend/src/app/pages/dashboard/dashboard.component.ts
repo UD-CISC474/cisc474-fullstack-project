@@ -3,7 +3,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MarketService } from '../market/market.service';
 import { DashboardService } from './dashboard.service';
 import dayjs from 'dayjs';
-import { Stock } from '../../interfaces';
+import { CompanyResponse, Stock } from '../../interfaces';
 import { lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -19,8 +19,29 @@ import { PortfolioService } from '../portfolio/portfolio.service';
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent {
+  selectedTicker: CompanyResponse = {
+    successful: true,
+    ticker: '',
+    count: 0,
+    start: new Date(),
+    end: new Date(),
+    prices: [
+      {
+        average: 0,
+        close: 0,
+        high: 0,
+        low: 0,
+        open: 0,
+        openTimestamp: 0,
+      },
+    ],
+  };
+  searchQuery: string = '';
   userId: string = '';
-  sessionToken = '';
+  sessionToken: string = '';
+  amount: number = 1;
+  yesterday: string = '';
+  stocks: CompanyResponse[] = [];
   nasdaqValue: number = 0;
   spValue: number = 0;
   dowValue: number = 0;
@@ -59,7 +80,41 @@ export class DashboardComponent {
       this.portfolioValue = value;
     });
 
+    this.fetchPopularStocks();
     this.getNewsFromOpenAI();
+  }
+
+  async fetchPopularStocks(): Promise<void> {
+    const tickers = ['AAPL', 'MSFT', 'GOOG', 'AMZN'];
+
+    for (const ticker of tickers) {
+      const stockData = await this.searchTicker(ticker, this.yesterday);
+      if (stockData) {
+        this.stocks.push(stockData);
+      }
+    }
+  }
+
+  async searchTicker(ticker: string, startDate: string): Promise<CompanyResponse | null> {
+    try {
+      const url = `http://localhost:3000/api/stock/${ticker}/${startDate}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const stockData = await response.json();
+      if (stockData.successful) {
+        return stockData;
+      } else {
+        console.warn(`Data for ${ticker} was not successful:`, stockData);
+        return null;
+      }
+    } catch (err) {
+      console.error('Error fetching stock data:', err);
+      return null;
+    }
   }
 
   async getNewsFromOpenAI() {

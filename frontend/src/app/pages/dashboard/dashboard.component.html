@@ -5,11 +5,6 @@
     gutterSize="10px"
     class="dashboard-grid"
   >
-    <!-- NASDAQ Composite -->
-    <mat-grid-tile [colspan]="4" [rowspan]="1" class="nasdaq-tile">
-      NASDAQ Composite: {{ nasdaqValue }} STC
-    </mat-grid-tile>
-
     <!-- Portfolio Value -->
     <mat-grid-tile [colspan]="4" [rowspan]="1" class="portfolio-value-tile">
       Portfolio Value: {{ portfolioValue }} STC
@@ -19,14 +14,20 @@
       Insert change in dollars:
     </mat-grid-tile>
 
-    <!-- Highest Earner -->
-    <mat-grid-tile [colspan]="2" [rowspan]="1" class="highest-earner-tile">
-      Highest Earner:
-    </mat-grid-tile>
-
-    <!-- Biggest Loser -->
-    <mat-grid-tile [colspan]="2" [rowspan]="1" class="biggest-loser-tile">
-      Biggest Loser:
+    <!-- Display Popular Stocks -->
+    <mat-grid-tile
+      *ngFor="let stock of stocks"
+      [colspan]="1"
+      [rowspan]="1"
+      class="stock-tile"
+    >
+      <div class="stock-info">
+        <h4>{{ stock.ticker }}</h4>
+        <p>Opening Price: {{ stock.prices[0].open | currency }}</p>
+        <p>Closing Price: {{ stock.prices[0].close | currency }}</p>
+        <p>High: {{ stock.prices[0].high | currency }}</p>
+        <p>Low: {{ stock.prices[0].low | currency }}</p>
+      </div>
     </mat-grid-tile>
 
     <!-- Recent News -->
@@ -36,10 +37,10 @@
       [rowspan]="1"
       class="news-tile"
     >
-    <div class="news">
-      <h6 class="header"> {{ news.title }} </h6>
-      <span *ngIf="news.content!='Loading...'">{{ news.content }} </span>
-    </div>
+      <div class="news">
+        <h6 class="header"> {{ news.title }} </h6>
+        <span *ngIf="news.content != 'Loading...'">{{ news.content }} </span>
+      </div>
     </mat-grid-tile>
   </mat-grid-list>
 </div>
