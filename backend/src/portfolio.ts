@@ -134,6 +134,35 @@ class Tracker {
 }
   
 
+// const getTransactions = (username: string): Promise<Transaction[]> => {
+//   return new Promise((resolve, reject) => {
+//     const ref = database.ref(`/users/${username}/transactions`);
+//     ref.once('value', (snap) => {
+//       resolve(snap.exists() ? Object.values(snap.val()) : []);
+//     });
+//   });
+// }
+
+// const getHoldings = (username: string): Promise<Holdings> => {
+//   return new Promise((resolve, reject) => {
+//     const ref = database.ref(`/users/${username}`);
+//     ref.once('value', async (snap) => {
+//       if(snap.exists()) {
+//         const data = snap.val();
+//         const { cash, startingCash } = data.portfolio;
+//         const transactions: Transaction[] = Object.values(data.transactions);
+
+//         const tracker = new Tracker(startingCash, transactions);
+//         const result = await tracker.getHoldings();
+
+//         resolve(result);
+//       } else {
+//         reject();
+//       }
+//     })
+//   });
+// }
+
 const getTransactions = (username: string): Promise<Transaction[]> => {
   return new Promise((resolve, reject) => {
     const ref = database.ref(`/users/${username}/transactions`);
@@ -150,7 +179,7 @@ const getHoldings = (username: string): Promise<Holdings> => {
       if(snap.exists()) {
         const data = snap.val();
         const { cash, startingCash } = data.portfolio;
-        const transactions: Transaction[] = Object.values(data.transactions);
+        const transactions: Transaction[] = Object.values(data.transactions || {});
 
         const tracker = new Tracker(startingCash, transactions);
         const result = await tracker.getHoldings();

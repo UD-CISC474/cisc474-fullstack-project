@@ -16,6 +16,75 @@ type Req = express.Request;
 type Res = express.Response;
 
 // Used by buyStock & sellStock to execute trades
+// const exchangeStock = async ({
+//   username,
+//   ticker,
+//   amount,
+//   price,
+//   type,
+// }: {
+//   username: string;
+//   ticker: string;
+//   amount: number;
+//   price: number;
+//   type: "buy" | "sell";
+// }) => {
+//   const userRef = database.ref(`/users/${username}`);
+//   const snapshot = await userRef.once("value");
+//   const userData = snapshot.val();
+
+//   if (!userData) {
+//     throw new Error("User does not exist.");
+//   }
+
+//   const portfolio = userData.portfolio || {};
+//   const transactions = portfolio.transactions || {};
+//   const cash = portfolio.cash || 0;
+
+//   const totalCostOrProceeds = price * amount;
+
+//   if (type === "buy") {
+//     if (cash < totalCostOrProceeds) {
+//       throw new Error("Insufficient funds to complete the transaction.");
+//     }
+
+//     portfolio.cash = cash - totalCostOrProceeds;
+
+//     transactions[ticker] = transactions[ticker] || [];
+//     transactions[ticker].push({
+//       type,
+//       amount,
+//       price,
+//       timestamp: new Date().toISOString().split("T")[0],
+//     });
+//   } else if (type === "sell") {
+//     const tickerTransactions = transactions[ticker] || [];
+
+//     const currentHoldings = tickerTransactions.reduce((total: any, tx: any) => {
+//       return tx.type === "buy" ? total + tx.amount : total - tx.amount;
+//     }, 0);
+
+//     if (currentHoldings < amount) {
+//       throw new Error("Insufficient shares to sell.");
+//     }
+
+//     portfolio.cash = cash + totalCostOrProceeds;
+
+//     transactions[ticker] = tickerTransactions;
+//     transactions[ticker].push({
+//       type,
+//       amount,
+//       price,
+//       timestamp: new Date().toISOString().split("T")[0],
+//     });
+//   }
+
+//   portfolio.transactions = transactions;
+//   await userRef.update({ portfolio });
+
+//   return portfolio;
+// };
+
 const exchangeStock = async ({
   username,
   ticker,
@@ -38,7 +107,7 @@ const exchangeStock = async ({
   }
 
   const portfolio = userData.portfolio || {};
-  const transactions = portfolio.transactions || {};
+  const transactions = userData.transactions || {};
   const cash = portfolio.cash || 0;
 
   const totalCostOrProceeds = price * amount;
@@ -79,10 +148,12 @@ const exchangeStock = async ({
     });
   }
 
-  portfolio.transactions = transactions;
-  await userRef.update({ portfolio });
+  await userRef.update({ 
+    portfolio, 
+    transactions 
+  });
 
-  return portfolio;
+  return { portfolio, transactions };
 };
 
 // EXPRESS ROUTES -- EXPORT THESE
