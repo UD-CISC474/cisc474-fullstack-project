@@ -1,7 +1,7 @@
 .dashboard-container {
   padding: 20px;
-  // background-color: #f0f2f5;
-  background-color: white;
+  background-color: #f0f2f5;
+  // background-color: white;
   border-radius: 8px;
 
   .dashboard-grid {
@@ -10,50 +10,61 @@
 
     mat-grid-tile {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
       text-align: center;
       font-size: 1.2rem;
       font-weight: bold;
       color: #333;
       border: 2px solid black;
       border-radius: 12px;
+      box-shadow: 2px #333;
 
       &.nasdaq-tile {
-        background-color: lightblue;
+        background-color: rgba(173, 216, 230, 0.5);
         color: #003366;
         border: 2px solid black;
         border-radius: 12px;
       }
 
       &.portfolio-value-tile {
-        background-color: #ddbdf1;
+        background-color: #ddbdf175;
         color: #4a004a;
         border: 2px solid black;
         border-radius: 12px;
       }
 
       &.highest-earner-tile {
-        background-color: lightgreen;
+        background-color: rgba(144, 238, 144, 0.500);
         color: #006400;
         border: 2px solid black;
         border-radius: 12px;
       }
 
       &.biggest-loser-tile {
-        background-color: lightpink;
+        background-color: rgba(255, 182, 193, 0.500);
         color: #8b0000;
         border: 2px solid black;
         border-radius: 12px;
       }
 
       &.news-tile {
-        background-color: #ddbdf1;
+        background-color: #ddbdf175;
         color: #333;
         font-size: 0.9rem; /* Make the font smaller */
         font-weight: normal; /* Remove bold styling */
         border: 2px solid black;
         border-radius: 12px;
+      }
+      &.news {
+        padding:20px;
+        justify-content: flex-start;
+      }
+
+      &.news .header {
+        margin-top: 0;
+        font-weight: bold;
       }
     }
   }

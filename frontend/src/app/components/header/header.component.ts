@@ -35,7 +35,6 @@ export class HeaderComponent implements OnInit {
 
   checkLoginStatus() {
     const token = localStorage.getItem('token');
-    console.log(token)
     this.isLoggedIn = !!token;
   }
 

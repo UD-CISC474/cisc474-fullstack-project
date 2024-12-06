@@ -40,6 +40,10 @@ export class PortfolioComponent {
       this.userId = username;
       this.sessionToken = token;
     }
+    this.getPortfolioValue();
+    this.loadTransactions();
+    this.loadHoldings();
+    // this.loadAvailableCoins();
   }
 
   async loadAvailableCoins(): Promise<void> {
@@ -61,14 +65,33 @@ export class PortfolioComponent {
       const response = await firstValueFrom(
         this.portfolioService.getUserStocks(this.userId)
       );
-      const stocksArray: Transaction[] = Object.values(response.stocks || {});
+      if (!response.holdings.stocks) {
+        return;
+      }
+      const stocksArray: any[] = Object.values(response.holdings.stocks || {});
+
+      const stocksMapped: Transaction[] = stocksArray.map((value) => {
+        const price = value.currentSharePrice || 0;
+        const shares = value.numberOfShares || 0;
+        const stockSymbol = value.ticker || '';
+        const total = (price * shares).toFixed(2);
+        const timestamp = new Date().toISOString().slice(0, 10); 
+  
+        return {
+          price,
+          shares,
+          stockSymbol,
+          timestamp,
+          total: Number(total),
+        };
+      });
 
       const stockMap = new Map<
         string,
         { shares: number; totalValue: number }
       >();
 
-      stocksArray.forEach((value) => {
+      stocksMapped.forEach((value) => {
         const roundedTotal = Number((value.shares * value.price).toFixed(2));
 
         if (stockMap.has(value.stockSymbol)) {
@@ -108,9 +131,24 @@ export class PortfolioComponent {
       const response = await firstValueFrom(
         this.portfolioService.getUserStocks(this.userId)
       );
-      const stocksArray: Transaction[] = Object.values(response.stocks || {});
+      const stocksArray: any[] = Object.values(response.holdings.stocks || {});
+      const stocksMapped: Transaction[] = stocksArray.map((value) => {
+        const price = value.currentSharePrice || 0;
+        const shares = value.numberOfShares || 0;
+        const stockSymbol = value.ticker || '';
+        const total = (price * shares).toFixed(2);
+        const timestamp = new Date().toISOString().slice(0, 10); 
+  
+        return {
+          price,
+          shares,
+          stockSymbol,
+          timestamp,
+          total: Number(total),
+        };
+      });
 
-      const preProcessedTransactions = stocksArray.map((value) => {
+      const preProcessedTransactions = stocksMapped.map((value) => {
         const roundedPrice = Number(value.price.toFixed(2));
         const roundedTotal = Number((value.shares * value.price).toFixed(2));
         const newValue: Transaction = {
@@ -136,18 +174,35 @@ export class PortfolioComponent {
         this.marketService.getUserStocks(this.userId)
       );
 
-      const userStocks: { [key: string]: Transaction } = response.stocks || {};
+      const userStocks: { [key: string]: any } = response.holdings.stocks || {};
       const userStocksArray = Object.values(userStocks);
 
+      const stocksMapped: Transaction[] = userStocksArray.map((value) => {
+        const price = value.currentSharePrice || 0;
+        const shares = value.numberOfShares || 0;
+        const stockSymbol = value.ticker || '';
+        const total = (price * shares).toFixed(2);
+        const timestamp = new Date().toISOString().slice(0, 10); 
+  
+        return {
+          price,
+          shares,
+          stockSymbol,
+          timestamp,
+          total: Number(total),
+        };
+      });
+
+
       let totalValue = 0;
-      if (userStocksArray && userStocksArray.length > 0) {
-        userStocksArray.forEach((stock) => {
+      if (stocksMapped && stocksMapped.length > 0) {
+        stocksMapped.forEach((stock) => {
           totalValue += stock.price * stock.shares;
         });
       }
 
       this.portfolioValue = Number(totalValue.toFixed(2));
-      console.log(`Portfolio Value: ${this.portfolioValue}`);
+      this.portfolioService.setPortfolioValue(totalValue);
     } catch (error) {
       console.error('Failed to fetch portfolio value:', error);
       this.portfolioValue = 0;

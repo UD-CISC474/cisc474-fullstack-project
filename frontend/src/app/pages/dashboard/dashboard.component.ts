@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '../../../../environment';
+import { PortfolioService } from '../portfolio/portfolio.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,19 +25,20 @@ export class DashboardComponent {
   spValue: number = 0;
   dowValue: number = 0;
   portfolioValue: number = 0;
-  recentNews: string[] = [
-    'Loading...',
-    'Loading...',
-    'Loading...',
-    'Loading...',
+  recentNews: { title: string, content: string }[] = [
+    { title: 'Loading...', content: 'Loading...' },
+    { title: 'Loading...', content: 'Loading...' },
+    { title: 'Loading...', content: 'Loading...' },
+    { title: 'Loading...', content: 'Loading...' }
   ];
 
   constructor(
     private marketService: MarketService,
     private router: Router,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private portfolioService: PortfolioService
   ) {
-    //this.getPortfolioValue();
+    // this.getPortfolioValue();
   }
 
   ngOnInit(): void {
@@ -52,6 +54,10 @@ export class DashboardComponent {
     } else {
       yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
     }
+
+    this.portfolioService.portfolioValue$.subscribe((value) => {
+      this.portfolioValue = value;
+    });
 
     this.getNewsFromOpenAI();
   }
@@ -69,16 +75,25 @@ export class DashboardComponent {
         {
           role: 'user',
           content:
-            'Give me some news on 4 trending stocks. Inbetween each news entry, put this character |. Do not use any markdown features or numbering.',
+            'Give me some news on 4 trending stocks. Inbetween each news entry, put this character |. Do not use any markdown features or numbering. Give short title of the news with : before the news start',
         },
       ],
     });
 
     const response = completion.choices[0].message.content;
     let responseAsArray = response?.split('|');
+    this.recentNews = responseAsArray?.map((value) => {
+      const temp = value.split(':');
+      return {
+        title: temp[0],
+        content: temp[1]
+      };
+    }) || [];
 
-    if (responseAsArray) {
-      this.recentNews = responseAsArray;
-    }
+    // console.log(responseAsArray)
+
+    // if (responseAsArray) {
+    //   this.recentNews = recentNews;
+    // }
   }
 }
