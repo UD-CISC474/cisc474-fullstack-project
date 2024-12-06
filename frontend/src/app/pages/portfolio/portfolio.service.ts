@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams, HttpHeaders  } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -9,8 +9,24 @@ export class PortfolioService {
   constructor(private http: HttpClient) {}
 
   getUserStocks(userId: string): Observable<any> {
-    const apiUrl = 'http://localhost:3000/api/user/stock';
-    const params = new HttpParams().set('userId', userId);
-    return this.http.get(apiUrl, { params });
+    const apiUrl = 'http://localhost:3000/api/portfolio';
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders().set('Authorization', `${token}`);
+  const username = userId
+  const body = { username };
+
+  console.log('Sending request with token:', token)
+
+  return this.http.post(apiUrl, body, { headers })
+    .pipe(
+      tap(
+        (response) => {
+          console.log('User portfolio:', response);
+        },
+        (error) => {
+          console.error('Error fetching portfolio:', error);
+        }
+      )
+    );
   }
 }

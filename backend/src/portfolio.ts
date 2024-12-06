@@ -36,6 +36,7 @@ class Tracker {
   private transactions: Transaction[];
 
   constructor(initialCash: number, transactions: Transaction[]) {
+    console.log("transactions[0]:", transactions[0]);
     this.epoch = new Date(transactions[0].date);
     this.dailyHoldings.cash = [initialCash];
 
@@ -53,12 +54,19 @@ class Tracker {
   private async queryStocks() {
     // Query all the stocks on polygon
     const tickers = Array.from(this.tickerSet.values());
+    console.log(tickers)
+    console.log("this.epoch:", this.epoch);
+
+    this.epoch = new Date("2024-12-04");
+
     const companyResponses = await Promise.all(tickers.map(ticker => queryCompanyData({
         ticker,
         from: this.epoch.toISOString().substring(0, 10),
         to: this.termination.toISOString().substring(0, 10),
         interval: "day"
       })));
+
+      // console.log("companyRes", companyResponses)
 
     // Create array of all responded dates
     this.dates = companyResponses[0].prices.map(priceObj => {
@@ -98,6 +106,7 @@ class Tracker {
     await this.queryStocks();
     this.resolveTransactions();
     const length = this.dates.length;
+    console.log(length)
 
     // Calculate portfolio value graph
     const portfolioValue = new Array(length).fill(0);
@@ -135,6 +144,7 @@ class Tracker {
   
 
 const getTransactions = (username: string): Promise<Transaction[]> => {
+  console.log("reached")
   return new Promise((resolve, reject) => {
     const ref = database.ref(`/users/${username}/transactions`);
     ref.once('value', (snap) => {
@@ -146,14 +156,20 @@ const getTransactions = (username: string): Promise<Transaction[]> => {
 const getHoldings = (username: string): Promise<Holdings> => {
   return new Promise((resolve, reject) => {
     const ref = database.ref(`/users/${username}`);
+    console.log("ref")
+    console.log(ref)
     ref.once('value', async (snap) => {
       if(snap.exists()) {
         const data = snap.val();
         const { cash, startingCash } = data.portfolio;
+        console.log("data: ",data)
+        console.log(data.transactions)
         const transactions: Transaction[] = Object.values(data.transactions);
 
         const tracker = new Tracker(startingCash, transactions);
         const result = await tracker.getHoldings();
+
+        console.log("result", result)
 
         resolve(result);
       } else {

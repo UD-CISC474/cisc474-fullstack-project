@@ -111,7 +111,6 @@ export class MarketComponent implements OnInit {
       body: JSON.stringify(payload),
     });
     const data = await buyResponse.json();
-    console.log(data);
     if (data.message === 'Stock purchase successful.') {
       const totalPrice = Number(
         this.selectedTicker.prices[0].close * amount
