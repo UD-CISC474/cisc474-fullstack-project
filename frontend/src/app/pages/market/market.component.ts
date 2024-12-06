@@ -118,8 +118,10 @@ export class MarketComponent implements OnInit {
       console.log(
         `Success! Bought ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`
       );
+      window.alert(`Success! Bought ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`)
     } else {
       console.log("Error: couldn't buy stock.");
+      window.alert("Error: couldn't buy stock.")
     }
   }
 
@@ -149,8 +151,10 @@ export class MarketComponent implements OnInit {
       console.log(
         `Success! Sold ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`
       );
+      window.alert(`Success! Sold ${amount} shares of ${this.selectedTicker.ticker} for ${totalPrice} Super Trader Coins!`)
     } else {
       console.log("Error: couldn't sell stock.");
+      window.alert("Error: couldn't sell stock.")
     }
   }
 

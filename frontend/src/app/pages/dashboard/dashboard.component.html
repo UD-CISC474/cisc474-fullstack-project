@@ -36,7 +36,10 @@
       [rowspan]="1"
       class="news-tile"
     >
-      {{ news }}
+    <div class="news">
+      <h6 class="header"> {{ news.title }} </h6>
+      <span *ngIf="news.content!='Loading...'">{{ news.content }} </span>
+    </div>
     </mat-grid-tile>
   </mat-grid-list>
 </div>

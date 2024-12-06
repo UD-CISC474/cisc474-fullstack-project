@@ -25,11 +25,11 @@ export class DashboardComponent {
   spValue: number = 0;
   dowValue: number = 0;
   portfolioValue: number = 0;
-  recentNews: string[] = [
-    'Loading...',
-    'Loading...',
-    'Loading...',
-    'Loading...',
+  recentNews: { title: string, content: string }[] = [
+    { title: 'Loading...', content: 'Loading...' },
+    { title: 'Loading...', content: 'Loading...' },
+    { title: 'Loading...', content: 'Loading...' },
+    { title: 'Loading...', content: 'Loading...' }
   ];
 
   constructor(
@@ -75,18 +75,25 @@ export class DashboardComponent {
         {
           role: 'user',
           content:
-            'Give me some news on 4 trending stocks. Inbetween each news entry, put this character |. Do not use any markdown features or numbering.',
+            'Give me some news on 4 trending stocks. Inbetween each news entry, put this character |. Do not use any markdown features or numbering. Give short title of the news with : before the news start',
         },
       ],
     });
 
     const response = completion.choices[0].message.content;
     let responseAsArray = response?.split('|');
+    this.recentNews = responseAsArray?.map((value) => {
+      const temp = value.split(':');
+      return {
+        title: temp[0],
+        content: temp[1]
+      };
+    }) || [];
 
-    if (responseAsArray) {
-      this.recentNews = responseAsArray;
-    }
+    // console.log(responseAsArray)
 
-    console.log(responseAsArray)
+    // if (responseAsArray) {
+    //   this.recentNews = recentNews;
+    // }
   }
 }

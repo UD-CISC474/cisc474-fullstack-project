@@ -84,6 +84,34 @@ const queryCompanyData = async ({
     .then((res) => res.json())
     .then((res) => {
       const successful = res.resultsCount && res.resultsCount > 0;
+
+      // const prices = successful ? res.results.map(
+      //   (e: {
+      //     c: number; // close
+      //     h: number; // high
+      //     l: number; // low
+      //     o: number; // open
+      //     t: number; // timestamp
+      //     vw: number; // average
+      //   }) => {
+      //     return {
+      //       average: e.vw,
+      //       close: e.c,
+      //       high: e.h,
+      //       low: e.l,
+      //       open: e.o,
+      //       openTimestamp: e.t,
+      //     };
+      //   }
+      // ) : [];
+
+      // const currentPrice = prices.length > 0 ? prices[prices.length - 1].close : 0;
+      
+      // let changePercent = undefined;
+      // if (buyPrice && currentPrice) {
+      //   changePercent = ((currentPrice - buyPrice) / buyPrice) * 100;
+      // }
+
       return {
         successful: successful ? true : false,
         ticker,
